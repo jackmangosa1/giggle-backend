@@ -1,5 +1,7 @@
 ﻿using Microsoft.AspNetCore.Identity;
+using ServiceManagementAPI.Data;
 using ServiceManagementAPI.Dtos;
+using ServiceManagementAPI.Entities;
 using ServiceManagementAPI.Services.EmailService;
 using ServiceManagementAPI.Utils;
 using System.Security.Claims;
@@ -8,17 +10,20 @@ namespace ServiceManagementAPI.Repositories.AuthRepository
 {
     public class AuthRepository : IAuthRepository
     {
+        private readonly ServiceManagementDbContext _context;
         private readonly UserManager<IdentityUser> _userManager;
         private readonly SignInManager<IdentityUser> _signInManager;
         private readonly IConfiguration _configuration;
         private readonly IEmailService _emailService;
 
         public AuthRepository(
+            ServiceManagementDbContext context,
             UserManager<IdentityUser> userManager,
             SignInManager<IdentityUser> signInManager,
             IEmailService emailService,
             IConfiguration configuration)
         {
+            _context = context;
             _userManager = userManager;
             _signInManager = signInManager;
             _configuration = configuration;
@@ -32,6 +37,19 @@ namespace ServiceManagementAPI.Repositories.AuthRepository
 
             if (result.Succeeded)
             {
+                var customerProfile = new Customer
+                {
+                    UserId = user.Id,
+                    Address = null,
+                    PhoneNumber = null,
+                    PreferredPaymentMethod = null,
+                    FullName = null,
+                    ProfilePictureUrl = null
+                };
+
+                _context.Customers.Add(customerProfile);
+                await _context.SaveChangesAsync();
+
                 var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
                 var confirmationLink = UrlGenerator.GenerateEmailConfirmationLink(user.Id, token, _configuration["ApplicationUrl"]!);
 
@@ -80,6 +98,18 @@ namespace ServiceManagementAPI.Repositories.AuthRepository
 
             if (result.Succeeded)
             {
+                var providerProfile = new Provider
+                {
+                    UserId = user.Id,
+                    Bio = null,
+                    Skills = null,
+                    DisplayName = null,
+                    ProfilePictureUrl = null
+                };
+
+                _context.Providers.Add(providerProfile);
+                await _context.SaveChangesAsync();
+
                 var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
                 var confirmationLink = UrlGenerator.GenerateEmailConfirmationLink(user.Id, token, _configuration["ApplicationUrl"]!);
 
