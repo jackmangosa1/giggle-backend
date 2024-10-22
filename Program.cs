@@ -1,12 +1,16 @@
 
+using Azure.Storage.Blobs;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using ServiceManagementAPI.Data;
 using ServiceManagementAPI.Repositories.AuthRepository;
+using ServiceManagementAPI.Repositories.CustomerRepository;
 using ServiceManagementAPI.Services.AuthService;
+using ServiceManagementAPI.Services.CustomerService;
 using ServiceManagementAPI.Services.EmailService;
+using ServiceManagementAPI.Utils;
 using System.Text;
 
 namespace ServiceManagementAPI
@@ -38,10 +42,24 @@ namespace ServiceManagementAPI
                 .AddEntityFrameworkStores<ServiceManagementIdentityDbContext>()
                 .AddDefaultTokenProviders();
 
+            builder.Services.AddSingleton(x =>
+               new BlobServiceClient(builder.Configuration.GetValue<string>("AzureBlobStorage:ConnectionString")));
+
+            builder.Services.AddSingleton(x =>
+            {
+                var blobServiceClient = x.GetRequiredService<BlobServiceClient>();
+                return blobServiceClient.GetBlobContainerClient("profile-pictures");
+            });
+
+
 
             builder.Services.AddScoped<IAuthRepository, AuthRepository>();
             builder.Services.AddScoped<IAuthService, AuthService>();
             builder.Services.AddScoped<IEmailService, EmailService>();
+            builder.Services.AddScoped<ICustomerRepository, CustomerRepository>();
+            builder.Services.AddScoped<ICustomerService, CustomerService>();
+            builder.Services.AddSingleton<BlobStorageUtil>();
+
 
             builder.Services.AddAuthentication(options =>
             {
