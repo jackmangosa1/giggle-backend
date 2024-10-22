@@ -7,9 +7,11 @@ using Microsoft.IdentityModel.Tokens;
 using ServiceManagementAPI.Data;
 using ServiceManagementAPI.Repositories.AuthRepository;
 using ServiceManagementAPI.Repositories.CustomerRepository;
+using ServiceManagementAPI.Repositories.ProviderRepository;
 using ServiceManagementAPI.Services.AuthService;
 using ServiceManagementAPI.Services.CustomerService;
 using ServiceManagementAPI.Services.EmailService;
+using ServiceManagementAPI.Services.ProviderService;
 using ServiceManagementAPI.Utils;
 using System.Text;
 
@@ -58,6 +60,8 @@ namespace ServiceManagementAPI
             builder.Services.AddScoped<IEmailService, EmailService>();
             builder.Services.AddScoped<ICustomerRepository, CustomerRepository>();
             builder.Services.AddScoped<ICustomerService, CustomerService>();
+            builder.Services.AddScoped<IProviderRepository, ProviderRepository>();
+            builder.Services.AddScoped<IProviderService, ProviderService>();
             builder.Services.AddSingleton<BlobStorageUtil>();
 
 

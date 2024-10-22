@@ -15,7 +15,7 @@ namespace ServiceManagementAPI.Controllers
             _userService = userService;
         }
 
-        [HttpGet("{customerId}")]
+        [HttpGet("profile/{customerId}")]
         public async Task<IActionResult> GetCustomerProfile(int customerId)
         {
             var customerProfile = await _userService.GetCustomerProfileAsync(customerId);
@@ -28,7 +28,7 @@ namespace ServiceManagementAPI.Controllers
             return Ok(customerProfile);
         }
 
-        [HttpPut("{customerId}")]
+        [HttpPut("profile/{customerId}")]
         public async Task<IActionResult> UpdateCustomerProfile(int customerId, [FromForm] UpdateCustomerProfileDto updateCustomerProfileDto, IFormFile? imageFile = null)
         {
             if (!ModelState.IsValid)
