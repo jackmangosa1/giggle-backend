@@ -3,12 +3,8 @@ using ServiceManagementAPI.Entities;
 
 namespace ServiceManagementAPI.Data;
 
-public partial class ServiceManagementDbContext : DbContext
+public partial class ServiceManagementDbContext : ServiceManagementIdentityDbContext
 {
-    public ServiceManagementDbContext()
-    {
-    }
-
     public ServiceManagementDbContext(DbContextOptions<ServiceManagementDbContext> options)
         : base(options)
     {
@@ -182,9 +178,7 @@ public partial class ServiceManagementDbContext : DbContext
             entity.Property(e => e.PhoneNumber)
                 .HasMaxLength(20)
                 .HasColumnName("phoneNumber");
-            entity.Property(e => e.PreferredPaymentMethod)
-                .HasMaxLength(50)
-                .HasColumnName("preferredPaymentMethod");
+            entity.Property(e => e.PreferredPaymentMethod).HasColumnName("preferredPaymentMethod");
             entity.Property(e => e.ProfilePictureUrl).HasMaxLength(255);
             entity.Property(e => e.UserId)
                 .HasMaxLength(450)

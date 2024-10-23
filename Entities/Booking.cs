@@ -1,4 +1,7 @@
-﻿namespace ServiceManagementAPI.Entities;
+﻿using System;
+using System.Collections.Generic;
+
+namespace ServiceManagementAPI.Entities;
 
 public partial class Booking
 {

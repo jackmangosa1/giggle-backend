@@ -1,4 +1,7 @@
-﻿namespace ServiceManagementAPI.Entities;
+﻿using System;
+using System.Collections.Generic;
+
+namespace ServiceManagementAPI.Entities;
 
 public partial class Customer
 {
@@ -10,7 +13,7 @@ public partial class Customer
 
     public string? PhoneNumber { get; set; }
 
-    public string? PreferredPaymentMethod { get; set; }
+    public int? PreferredPaymentMethod { get; set; }
 
     public string? FullName { get; set; }
 

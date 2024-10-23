@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using ServiceManagementAPI.Data;
 using ServiceManagementAPI.Dtos;
+using ServiceManagementAPI.Enums;
 using ServiceManagementAPI.Utils;
 namespace ServiceManagementAPI.Repositories.CustomerRepository
 {
@@ -28,13 +29,17 @@ namespace ServiceManagementAPI.Repositories.CustomerRepository
                 return null;
             }
 
+            PaymentMethod? preferredPaymentMethod = customer.PreferredPaymentMethod.HasValue
+        ? (PaymentMethod?)customer.PreferredPaymentMethod.Value
+        : null;
+
             var customerProfile = new CustomerProfileDto
             {
                 CustomerId = customer.Id,
                 FullName = customer.FullName,
                 Address = customer.Address,
                 PhoneNumber = customer.PhoneNumber,
-                PreferredPaymentMethod = customer.PreferredPaymentMethod,
+                PreferredPaymentMethod = preferredPaymentMethod,
                 ProfilePictureUrl = customer.ProfilePictureUrl,
                 Username = customer.User.UserName,
                 Email = customer.User.Email
@@ -55,7 +60,7 @@ namespace ServiceManagementAPI.Repositories.CustomerRepository
             customer.FullName = updateCustomerProfileDto.FullName;
             customer.Address = updateCustomerProfileDto.Address;
             customer.PhoneNumber = updateCustomerProfileDto.PhoneNumber;
-            customer.PreferredPaymentMethod = updateCustomerProfileDto.PreferredPaymentMethod;
+            customer.PreferredPaymentMethod = (int?)updateCustomerProfileDto.PreferredPaymentMethod;
 
 
             if (imageStream != null)

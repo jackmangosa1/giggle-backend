@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using ServiceManagementAPI.Enums;
+using System.ComponentModel.DataAnnotations;
 
 namespace ServiceManagementAPI.Dtos
 {
@@ -11,8 +12,7 @@ namespace ServiceManagementAPI.Dtos
         [StringLength(200, ErrorMessage = "Address cannot be longer than 200 characters.")]
         public string Address { get; set; } = string.Empty;
 
-        [StringLength(50, ErrorMessage = "Preferred payment method cannot be longer than 50 characters.")]
-        public string PreferredPaymentMethod { get; set; } = string.Empty;
+        public PaymentMethod? PreferredPaymentMethod { get; set; }
 
         [Required(ErrorMessage = "Phone number is required.")]
         [Phone(ErrorMessage = "Invalid phone number format.")]
