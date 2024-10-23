@@ -11,8 +11,6 @@ public partial class Provider
 
     public string? Bio { get; set; }
 
-    public string? Skills { get; set; }
-
     public string? DisplayName { get; set; }
 
     public string? ProfilePictureUrl { get; set; }
@@ -20,4 +18,6 @@ public partial class Provider
     public virtual ICollection<Service> Services { get; set; } = new List<Service>();
 
     public virtual AspNetUser User { get; set; } = null!;
+
+    public virtual ICollection<Skill> Skills { get; set; } = new List<Skill>();
 }

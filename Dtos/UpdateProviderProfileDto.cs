@@ -10,8 +10,8 @@ namespace ServiceManagementAPI.Dtos
         [StringLength(500, ErrorMessage = "Bio cannot exceed 500 characters.")]
         public string? Bio { get; set; }
 
-        [StringLength(200, ErrorMessage = "Skills cannot exceed 200 characters.")]
-        public string? Skills { get; set; }
+        // List of skill IDs instead of skill names
+        public List<int>? SkillIds { get; set; }
 
         public string? ImageFileName { get; set; }
     }

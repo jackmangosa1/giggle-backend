@@ -1,10 +1,16 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using System;
+using System.Collections.Generic;
+using Microsoft.EntityFrameworkCore;
 using ServiceManagementAPI.Entities;
 
 namespace ServiceManagementAPI.Data;
 
-public partial class ServiceManagementDbContext : ServiceManagementIdentityDbContext
+public partial class ServiceManagementDbContext : DbContext
 {
+    public ServiceManagementDbContext()
+    {
+    }
+
     public ServiceManagementDbContext(DbContextOptions<ServiceManagementDbContext> options)
         : base(options)
     {
@@ -43,6 +49,8 @@ public partial class ServiceManagementDbContext : ServiceManagementIdentityDbCon
     public virtual DbSet<Service> Services { get; set; }
 
     public virtual DbSet<ServiceCategory> ServiceCategories { get; set; }
+
+    public virtual DbSet<Skill> Skills { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         => optionsBuilder.UseSqlServer("Name=ConnectionStrings:DefaultConnectionString");
@@ -282,7 +290,6 @@ public partial class ServiceManagementDbContext : ServiceManagementIdentityDbCon
             entity.Property(e => e.Bio).HasColumnName("bio");
             entity.Property(e => e.DisplayName).HasMaxLength(200);
             entity.Property(e => e.ProfilePictureUrl).HasMaxLength(255);
-            entity.Property(e => e.Skills).HasColumnName("skills");
             entity.Property(e => e.UserId)
                 .HasMaxLength(450)
                 .HasColumnName("userId");
@@ -291,6 +298,21 @@ public partial class ServiceManagementDbContext : ServiceManagementIdentityDbCon
                 .HasForeignKey(d => d.UserId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK__ServicePr__userI__00200768");
+
+            entity.HasMany(d => d.Skills).WithMany(p => p.Providers)
+                .UsingEntity<Dictionary<string, object>>(
+                    "ProviderSkill",
+                    r => r.HasOne<Skill>().WithMany()
+                        .HasForeignKey("SkillId")
+                        .HasConstraintName("FK__ProviderS__Skill__2A164134"),
+                    l => l.HasOne<Provider>().WithMany()
+                        .HasForeignKey("ProviderId")
+                        .HasConstraintName("FK__ProviderS__Provi__29221CFB"),
+                    j =>
+                    {
+                        j.HasKey("ProviderId", "SkillId").HasName("PK__Provider__D8B661650E2562EE");
+                        j.ToTable("ProviderSkills");
+                    });
         });
 
         modelBuilder.Entity<Review>(entity =>
@@ -358,6 +380,15 @@ public partial class ServiceManagementDbContext : ServiceManagementIdentityDbCon
             entity.Property(e => e.Name)
                 .HasMaxLength(100)
                 .HasColumnName("name");
+        });
+
+        modelBuilder.Entity<Skill>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK__Skills__3214EC076E13E922");
+
+            entity.HasIndex(e => e.Name, "UQ__Skills__737584F6812EA99B").IsUnique();
+
+            entity.Property(e => e.Name).HasMaxLength(100);
         });
 
         OnModelCreatingPartial(modelBuilder);

@@ -6,7 +6,7 @@ CREATE TABLE Customers (
     ProfilePictureUrl NVARCHAR(255),
     address NVARCHAR(255),
     phoneNumber NVARCHAR(20),
-    preferredPaymentMethod NVARCHAR(50),
+    preferredPaymentMethod INT,
     FOREIGN KEY (userId) REFERENCES AspNetUsers(Id)
 );
 
@@ -17,8 +17,22 @@ CREATE TABLE Providers (
     DisplayName NVARCHAR(200), 
     ProfilePictureUrl NVARCHAR(255),
     bio NVARCHAR(MAX),
-    skills NVARCHAR(MAX),
     FOREIGN KEY (userId) REFERENCES AspNetUsers(Id)
+);
+
+-- Create the Skills table
+CREATE TABLE Skills (
+    Id INT PRIMARY KEY IDENTITY(1,1),
+    Name NVARCHAR(100) NOT NULL UNIQUE
+);
+
+-- Create the junction table for the many-to-many relationship
+CREATE TABLE ProviderSkills (
+    ProviderId INT,
+    SkillId INT,
+    FOREIGN KEY (ProviderId) REFERENCES Providers(Id) ON DELETE CASCADE,
+    FOREIGN KEY (SkillId) REFERENCES Skills(Id) ON DELETE CASCADE,
+    PRIMARY KEY (ProviderId, SkillId)
 );
 
 -- Create ServiceCategory table

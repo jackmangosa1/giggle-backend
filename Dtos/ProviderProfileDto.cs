@@ -5,7 +5,7 @@
         public int Id { get; set; }
         public string? DisplayName { get; set; }
         public string? Bio { get; set; }
-        public string? Skills { get; set; }
+        public List<string>? Skills { get; set; } // List of skill names
         public string? ProfilePictureUrl { get; set; }
         public string? UserName { get; set; } // From AspNetUser
         public string? Email { get; set; }    // From AspNetUser
