@@ -6,5 +6,6 @@ namespace ServiceManagementAPI.Services.CustomerService
     {
         Task<bool> UpdateCustomerProfileAsync(int customerId, UpdateCustomerProfileDto updateCustomerProfileDto, Stream imageStream = null!);
         Task<CustomerProfileDto?> GetCustomerProfileAsync(int customerId);
+        Task<bool> CreateBookingAsync(BookingDto bookingDto);
     }
 }

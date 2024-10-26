@@ -52,5 +52,18 @@ namespace ServiceManagementAPI.Controllers
 
             return Ok(new { message = "Profile updated successfully" });
         }
+
+        [HttpPost("bookings")]
+        public async Task<IActionResult> CreateBooking([FromBody] BookingDto bookingDto)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState); // Return 400 Bad Request if the model is invalid
+            }
+
+            var bookingSuccess = await _userService.CreateBookingAsync(bookingDto);
+            return CreatedAtAction(nameof(CreateBooking), new { message = "Booking created successfully." });
+        }
+
     }
 }

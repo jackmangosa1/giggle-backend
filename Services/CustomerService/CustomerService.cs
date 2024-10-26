@@ -20,5 +20,10 @@ namespace ServiceManagementAPI.Services.CustomerService
         {
             return await _userRepository.UpdateCustomerProfileAsync(customerId, updateCustomerProfileDto, imageStream);
         }
+
+        public async Task<bool> CreateBookingAsync(BookingDto bookingDto)
+        {
+            return await _userRepository.CreateBookingAsync(bookingDto);
+        }
     }
 }

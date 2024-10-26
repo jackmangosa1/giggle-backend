@@ -38,8 +38,6 @@ public partial class ServiceManagementDbContext : DbContext
 
     public virtual DbSet<Notification> Notifications { get; set; }
 
-    public virtual DbSet<NotificationType> NotificationTypes { get; set; }
-
     public virtual DbSet<Payment> Payments { get; set; }
 
     public virtual DbSet<Provider> Providers { get; set; }
@@ -236,30 +234,15 @@ public partial class ServiceManagementDbContext : DbContext
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnName("createdAt");
             entity.Property(e => e.IsRead).HasColumnName("isRead");
-            entity.Property(e => e.TypeId).HasColumnName("typeId");
+            entity.Property(e => e.Type).HasColumnName("type");
             entity.Property(e => e.UserId)
                 .HasMaxLength(450)
                 .HasColumnName("userId");
-
-            entity.HasOne(d => d.Type).WithMany(p => p.Notifications)
-                .HasForeignKey(d => d.TypeId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__Notificat__typeI__22751F6C");
 
             entity.HasOne(d => d.User).WithMany(p => p.Notifications)
                 .HasForeignKey(d => d.UserId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK__Notificat__userI__2180FB33");
-        });
-
-        modelBuilder.Entity<NotificationType>(entity =>
-        {
-            entity.HasKey(e => e.Id).HasName("PK__Notifica__3213E83FF1F3892D");
-
-            entity.Property(e => e.Id).HasColumnName("id");
-            entity.Property(e => e.Name)
-                .HasMaxLength(100)
-                .HasColumnName("name");
         });
 
         modelBuilder.Entity<Payment>(entity =>

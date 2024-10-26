@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using ServiceManagementAPI.Data;
+using ServiceManagementAPI.Hubs;
 using ServiceManagementAPI.Repositories.AuthRepository;
 using ServiceManagementAPI.Repositories.CustomerRepository;
 using ServiceManagementAPI.Repositories.ProviderRepository;
@@ -84,6 +85,8 @@ namespace ServiceManagementAPI
                };
            });
 
+            builder.Services.AddSignalR();
+
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
 
@@ -102,6 +105,8 @@ namespace ServiceManagementAPI
 
 
             app.MapControllers();
+
+            app.MapHub<NotificationHub>("/notificationHub");
 
             app.Run();
         }

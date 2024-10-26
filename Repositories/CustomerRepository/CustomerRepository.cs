@@ -1,7 +1,10 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.SignalR;
+using Microsoft.EntityFrameworkCore;
 using ServiceManagementAPI.Data;
 using ServiceManagementAPI.Dtos;
+using ServiceManagementAPI.Entities;
 using ServiceManagementAPI.Enums;
+using ServiceManagementAPI.Hubs;
 using ServiceManagementAPI.Utils;
 namespace ServiceManagementAPI.Repositories.CustomerRepository
 {
@@ -10,11 +13,13 @@ namespace ServiceManagementAPI.Repositories.CustomerRepository
 
         private readonly ServiceManagementDbContext _context;
         private readonly BlobStorageUtil _blobStorageUtil;
+        private readonly IHubContext<NotificationHub> _hubContext;
 
-        public CustomerRepository(ServiceManagementDbContext context, BlobStorageUtil blobStorageUtil)
+        public CustomerRepository(ServiceManagementDbContext context, BlobStorageUtil blobStorageUtil, IHubContext<NotificationHub> hubContext)
         {
             _context = context;
             _blobStorageUtil = blobStorageUtil;
+            _hubContext = hubContext;
         }
 
         public async Task<CustomerProfileDto?> GetCustomerProfileAsync(int customerId)
@@ -76,5 +81,60 @@ namespace ServiceManagementAPI.Repositories.CustomerRepository
 
             return true;
         }
+
+        public async Task<bool> CreateBookingAsync(BookingDto bookingDto)
+        {
+
+            var service = await _context.Services
+                .Include(s => s.Provider)
+                .FirstOrDefaultAsync(s => s.Id == bookingDto.ServiceId);
+            var customer = await _context.Customers.FindAsync(bookingDto.CustomerId);
+
+            if (service == null || customer == null)
+            {
+                return false;
+            }
+
+            if (service.Provider == null)
+            {
+                // Handle the case where Provider is null
+                // You might want to log this or return an error response
+                return false;
+            }
+
+            var booking = new Booking
+            {
+                ServiceId = bookingDto.ServiceId,
+                CustomerId = bookingDto.CustomerId,
+                TotalPrice = bookingDto.TotalPrice,
+                ScheduledAt = bookingDto.ScheduledAt,
+                Status = "Pending",
+                PaymentStatus = "Unpaid",
+                CreatedAt = DateTime.UtcNow
+            };
+            _context.Bookings.Add(booking);
+
+            var notification = new Notification
+            {
+                UserId = service.Provider.UserId,
+                Type = (int)NotificationTypes.NewBooking,
+                IsRead = false,
+                CreatedAt = DateTime.UtcNow
+            };
+            _context.Notifications.Add(notification);
+
+            await _context.SaveChangesAsync();
+
+            string serviceName = service.Name;
+            string notificationMessage = $"You have a new booking for {serviceName}";
+
+            await _hubContext.Clients.User(service.ProviderId.ToString()).SendAsync("ReceiveNotification", notificationMessage);
+
+            return true;
+        }
+
+
+
+
     }
 }

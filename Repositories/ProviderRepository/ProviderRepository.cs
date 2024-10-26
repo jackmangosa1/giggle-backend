@@ -115,60 +115,49 @@ namespace ServiceManagementAPI.Repositories.ProviderRepository
 
         public async Task<bool> AddServiceAsync(int providerId, AddServiceDto addServiceDto, Stream? imageStream = null)
         {
-            // Check if the provider exists
             var provider = await _context.Providers
                 .FirstOrDefaultAsync(p => p.Id == providerId);
 
             if (provider == null)
             {
-                return false; // Provider not found
+                return false;
             }
 
-            // Check if the service category exists, if not create a new one
             var category = await _context.ServiceCategories
                 .FirstOrDefaultAsync(c => c.Name.ToLower() == addServiceDto.CategoryName.ToLower());
 
             if (category == null)
             {
-                // Create a new service category if it doesn't exist
                 category = new ServiceCategory
                 {
                     Name = addServiceDto.CategoryName
                 };
 
                 _context.ServiceCategories.Add(category);
-                await _context.SaveChangesAsync(); // Save to get the generated Id
+                await _context.SaveChangesAsync();
             }
 
-            // Initialize the mediaUrl
             string? mediaUrl = null;
 
-            // Upload the service image if provided
             if (imageStream != null)
             {
                 var containerName = "service-images";
                 var uniqueFileName = Guid.NewGuid().ToString();
-
-                // Upload the image to blob storage
                 mediaUrl = await _blobStorageUtil.UploadImageToBlobAsync(imageStream, uniqueFileName, containerName);
             }
 
-            // Create a new service entity
             var newService = new Service
             {
                 Name = addServiceDto.Name,
                 Description = addServiceDto.Description,
                 Price = addServiceDto.Price,
                 PriceType = (int)addServiceDto.PriceType,
-                MediaUrl = mediaUrl, // This will be null if no image is uploaded
-                ProviderId = provider.Id, // Associate with the provider
-                CategoryId = category.Id // Associate with the newly created or existing service category
+                MediaUrl = mediaUrl,
+                ProviderId = provider.Id,
+                CategoryId = category.Id
             };
 
-            // Add the new service to the provider's services collection
             provider.Services.Add(newService);
-
-            // Save changes to the database
             await _context.SaveChangesAsync();
 
             return true;

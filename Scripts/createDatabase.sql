@@ -113,20 +113,12 @@ CREATE TABLE Payments (
     status NVARCHAR(50) NOT NULL,
     FOREIGN KEY (bookingId) REFERENCES Bookings(id)
 );
-
--- Create NotificationTypes table
-CREATE TABLE NotificationTypes (
-    id INT PRIMARY KEY IDENTITY(1,1),
-    name NVARCHAR(100) NOT NULL
-);
-
 -- Create Notifications table
 CREATE TABLE Notifications (
     id INT PRIMARY KEY IDENTITY(1,1),
     userId NVARCHAR(450) NOT NULL,  
-    typeId INT NOT NULL,            
+    type INT NOT NULL,            
     isRead BIT NOT NULL DEFAULT 0,
     createdAt DATETIME2 NOT NULL DEFAULT GETDATE(),
-    FOREIGN KEY (userId) REFERENCES AspNetUsers(Id),
-    FOREIGN KEY (typeId) REFERENCES NotificationTypes(id)
+    FOREIGN KEY (userId) REFERENCES AspNetUser(Id),
 );
