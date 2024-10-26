@@ -66,7 +66,8 @@ namespace ServiceManagementAPI.Repositories.CustomerRepository
             if (imageStream != null)
             {
                 var containerName = "profile-pictures";
-                var imageUrl = await _blobStorageUtil.UploadImageToBlobAsync(imageStream, updateCustomerProfileDto.ImageFileName, containerName);
+                var fileName = customer.FullName;
+                var imageUrl = await _blobStorageUtil.UploadImageToBlobAsync(imageStream, fileName, containerName);
                 customer.ProfilePictureUrl = imageUrl;
             }
 

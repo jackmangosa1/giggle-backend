@@ -21,5 +21,10 @@ namespace ServiceManagementAPI.Services.ProviderService
         {
             return await _providerRepository.UpdateProviderProfileAsync(providerId, updateProviderProfileDto, imageStream);
         }
+
+        public async Task<bool> AddServiceAsync(int providerId, AddServiceDto addServiceDto, Stream imageStream = null!)
+        {
+            return await _providerRepository.AddServiceAsync(providerId, addServiceDto, imageStream);
+        }
     }
 }

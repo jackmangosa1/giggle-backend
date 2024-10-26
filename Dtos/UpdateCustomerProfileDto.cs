@@ -12,13 +12,14 @@ namespace ServiceManagementAPI.Dtos
         [StringLength(200, ErrorMessage = "Address cannot be longer than 200 characters.")]
         public string Address { get; set; } = string.Empty;
 
+        [Required]
+        [EnumDataType(typeof(PaymentMethod), ErrorMessage = "Invalid payment method.")]
         public PaymentMethod? PreferredPaymentMethod { get; set; }
 
         [Required(ErrorMessage = "Phone number is required.")]
         [Phone(ErrorMessage = "Invalid phone number format.")]
         public string PhoneNumber { get; set; } = string.Empty;
 
-        [StringLength(255, ErrorMessage = "Image file name cannot be longer than 255 characters.")]
-        public string ImageFileName { get; set; } = string.Empty;
     }
+
 }

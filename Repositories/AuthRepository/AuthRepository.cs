@@ -32,6 +32,16 @@ namespace ServiceManagementAPI.Repositories.AuthRepository
 
         public async Task<AuthResultDto> RegisterCustomerAsync(UserRegistrationDto registration)
         {
+            var existingUser = await _userManager.FindByEmailAsync(registration.Email);
+            if (existingUser != null)
+            {
+                return new AuthResultDto
+                {
+                    Succeeded = false,
+                    Errors = new List<string> { "Email is already in use" }
+                };
+            }
+
             var user = new IdentityUser { UserName = registration.UserName, Email = registration.Email };
             var result = await _userManager.CreateAsync(user, registration.Password);
 
@@ -93,6 +103,16 @@ namespace ServiceManagementAPI.Repositories.AuthRepository
 
         public async Task<AuthResultDto> RegisterProviderAsync(UserRegistrationDto registration)
         {
+            var existingUser = await _userManager.FindByEmailAsync(registration.Email);
+            if (existingUser != null)
+            {
+                return new AuthResultDto
+                {
+                    Succeeded = false,
+                    Errors = new List<string> { "Email is already in use" }
+                };
+            }
+
             var user = new IdentityUser { UserName = registration.UserName, Email = registration.Email };
             var result = await _userManager.CreateAsync(user, registration.Password);
 
@@ -102,7 +122,7 @@ namespace ServiceManagementAPI.Repositories.AuthRepository
                 {
                     UserId = user.Id,
                     Bio = null,
-                    Skills = null,
+                    Skills = null!,
                     DisplayName = null,
                     ProfilePictureUrl = null
                 };

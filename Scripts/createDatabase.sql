@@ -44,21 +44,23 @@ CREATE TABLE ServiceCategory (
 -- Create Services table
 CREATE TABLE Services (
     id INT PRIMARY KEY IDENTITY(1,1),
-    providerId INT NOT NULL,        -- This should reference ServiceProviders table
-    categoryId INT NOT NULL,        -- This should reference ServiceCategory table
+    providerId INT NOT NULL,       
+    categoryId INT NOT NULL,       
     name NVARCHAR(100) NOT NULL,
     description NVARCHAR(MAX),
-    price DECIMAL(10, 2) NOT NULL,
+    price DECIMAL(10, 2) NULL,      
+    priceType INT NOT NULL,        
     mediaURL NVARCHAR(255),
     FOREIGN KEY (providerId) REFERENCES ServiceProviders(id),
     FOREIGN KEY (categoryId) REFERENCES ServiceCategory(id)
 );
 
+
 -- Create Bookings table
 CREATE TABLE Bookings (
     id INT PRIMARY KEY IDENTITY(1,1),
-    serviceId INT NOT NULL,         -- This should reference Services table
-    customerId INT NOT NULL,        -- This should reference Customers table
+    serviceId INT NOT NULL,        
+    customerId INT NOT NULL,       
     totalPrice DECIMAL(10, 2) NOT NULL,
     status NVARCHAR(50) NOT NULL,
     paymentStatus NVARCHAR(50) NOT NULL,
@@ -72,7 +74,7 @@ CREATE TABLE Bookings (
 -- Create CompletedServices table
 CREATE TABLE CompletedServices (
     id INT PRIMARY KEY IDENTITY(1,1),
-    bookingId INT NOT NULL,         -- This should reference Bookings table
+    bookingId INT NOT NULL,       
     description NVARCHAR(MAX),
     mediaURL NVARCHAR(255),
     completedAt DATETIME2 NOT NULL,
@@ -82,8 +84,8 @@ CREATE TABLE CompletedServices (
 -- Create Reviews table
 CREATE TABLE Reviews (
     id INT PRIMARY KEY IDENTITY(1,1),
-    userId NVARCHAR(450) NOT NULL,  -- Foreign key to AspNetUsers
-    completedServiceId INT NOT NULL,  -- This should reference CompletedServices table
+    userId NVARCHAR(450) NOT NULL,
+    completedServiceId INT NOT NULL,
     rating INT NOT NULL CHECK (rating BETWEEN 1 AND 5),
     comment NVARCHAR(MAX),
     createdAt DATETIME2 NOT NULL DEFAULT GETDATE(),
@@ -94,8 +96,8 @@ CREATE TABLE Reviews (
 -- Create Messages table
 CREATE TABLE Messages (
     id INT PRIMARY KEY IDENTITY(1,1),
-    senderId NVARCHAR(450) NOT NULL,  -- Foreign key to AspNetUsers
-    receiverId NVARCHAR(450) NOT NULL, -- Foreign key to AspNetUsers
+    senderId NVARCHAR(450) NOT NULL, 
+    receiverId NVARCHAR(450) NOT NULL, 
     content NVARCHAR(MAX) NOT NULL,
     sentAt DATETIME2 NOT NULL DEFAULT GETDATE(),
     FOREIGN KEY (senderId) REFERENCES AspNetUsers(Id),
@@ -105,7 +107,7 @@ CREATE TABLE Messages (
 -- Create Payments table
 CREATE TABLE Payments (
     id INT PRIMARY KEY IDENTITY(1,1),
-    bookingId INT NOT NULL,          -- This should reference Bookings table
+    bookingId INT NOT NULL,          
     amount DECIMAL(10, 2) NOT NULL,
     method NVARCHAR(50) NOT NULL,
     status NVARCHAR(50) NOT NULL,
@@ -121,8 +123,8 @@ CREATE TABLE NotificationTypes (
 -- Create Notifications table
 CREATE TABLE Notifications (
     id INT PRIMARY KEY IDENTITY(1,1),
-    userId NVARCHAR(450) NOT NULL,   -- Foreign key to AspNetUsers
-    typeId INT NOT NULL,             -- This should reference NotificationTypes table
+    userId NVARCHAR(450) NOT NULL,  
+    typeId INT NOT NULL,            
     isRead BIT NOT NULL DEFAULT 0,
     createdAt DATETIME2 NOT NULL DEFAULT GETDATE(),
     FOREIGN KEY (userId) REFERENCES AspNetUsers(Id),

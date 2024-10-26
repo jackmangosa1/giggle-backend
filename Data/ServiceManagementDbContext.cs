@@ -78,6 +78,8 @@ public partial class ServiceManagementDbContext : DbContext
         {
             entity.HasIndex(e => e.NormalizedEmail, "EmailIndex");
 
+            entity.HasIndex(e => e.Email, "UQ_AspNetUsers_Email").IsUnique();
+
             entity.HasIndex(e => e.NormalizedUserName, "UserNameIndex")
                 .IsUnique()
                 .HasFilter("([NormalizedUserName] IS NOT NULL)");
@@ -357,6 +359,7 @@ public partial class ServiceManagementDbContext : DbContext
             entity.Property(e => e.Price)
                 .HasColumnType("decimal(10, 2)")
                 .HasColumnName("price");
+            entity.Property(e => e.PriceType).HasColumnName("priceType");
             entity.Property(e => e.ProviderId).HasColumnName("providerId");
 
             entity.HasOne(d => d.Category).WithMany(p => p.Services)

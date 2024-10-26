@@ -52,5 +52,30 @@ namespace ServiceManagementAPI.Controllers
 
             return Ok(new { message = "Profile updated successfully" });
         }
+
+        [HttpPost("{providerId}/services")]
+        public async Task<IActionResult> AddService(int providerId, [FromForm] AddServiceDto addServiceDto, IFormFile? imageFile = null)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            Stream? imageStream = null;
+
+            if (imageFile != null)
+            {
+                imageStream = imageFile.OpenReadStream();
+            }
+
+            var result = await _providerService.AddServiceAsync(providerId, addServiceDto, imageStream!);
+            if (!result)
+            {
+                return NotFound("Provider or Service Category not found.");
+            }
+
+            return Ok("Service added successfully.");
+        }
+
     }
 }
