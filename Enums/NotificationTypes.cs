@@ -2,8 +2,7 @@
 {
     public enum NotificationTypes
     {
-        BookingApproved,
-        BookingRejected,
+        BookingStatusChange,
         NewMessage,
         ServiceCompleted,
         RefundCompleted,

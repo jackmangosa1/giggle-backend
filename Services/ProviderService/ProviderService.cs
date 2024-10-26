@@ -1,4 +1,5 @@
 ﻿using ServiceManagementAPI.Dtos;
+using ServiceManagementAPI.Enums;
 using ServiceManagementAPI.Repositories.ProviderRepository;
 
 namespace ServiceManagementAPI.Services.ProviderService
@@ -25,6 +26,11 @@ namespace ServiceManagementAPI.Services.ProviderService
         public async Task<bool> AddServiceAsync(int providerId, AddServiceDto addServiceDto, Stream imageStream = null!)
         {
             return await _providerRepository.AddServiceAsync(providerId, addServiceDto, imageStream);
+        }
+
+        public async Task<bool> UpdateBookingStatusAsync(int bookingId, BookingStatus bookingStatus)
+        {
+            return await _providerRepository.UpdateBookingStatusAsync(bookingId, bookingStatus);
         }
     }
 }

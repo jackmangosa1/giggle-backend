@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using ServiceManagementAPI.Dtos;
+using ServiceManagementAPI.Enums;
 using ServiceManagementAPI.Services.ProviderService;
 
 namespace ServiceManagementAPI.Controllers
@@ -75,6 +76,24 @@ namespace ServiceManagementAPI.Controllers
             }
 
             return Ok("Service added successfully.");
+        }
+
+        [HttpPut("bookings/{bookingId}/status")]
+        public async Task<IActionResult> UpdateBookingStatus(int bookingId, [FromBody] BookingStatus bookingStatus)
+        {
+            if (!Enum.IsDefined(typeof(BookingStatus), bookingStatus))
+            {
+                return BadRequest(new { message = "Invalid booking status" });
+            }
+
+            var result = await _providerService.UpdateBookingStatusAsync(bookingId, bookingStatus);
+
+            if (!result)
+            {
+                return NotFound(new { message = "Booking not found or status update failed" });
+            }
+
+            return Ok(new { message = "Booking status updated successfully" });
         }
 
     }

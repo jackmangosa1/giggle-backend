@@ -1,8 +1,10 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.SignalR;
+using Microsoft.EntityFrameworkCore;
 using ServiceManagementAPI.Data;
 using ServiceManagementAPI.Dtos;
 using ServiceManagementAPI.Entities;
 using ServiceManagementAPI.Enums;
+using ServiceManagementAPI.Hubs;
 using ServiceManagementAPI.Utils;
 
 namespace ServiceManagementAPI.Repositories.ProviderRepository
@@ -11,11 +13,13 @@ namespace ServiceManagementAPI.Repositories.ProviderRepository
     {
         private readonly ServiceManagementDbContext _context;
         private readonly BlobStorageUtil _blobStorageUtil;
+        private readonly IHubContext<NotificationHub> _hubContext;
 
-        public ProviderRepository(ServiceManagementDbContext context, BlobStorageUtil blobStorageUtil)
+        public ProviderRepository(ServiceManagementDbContext context, BlobStorageUtil blobStorageUtil, IHubContext<NotificationHub> hubContext)
         {
             _context = context;
             _blobStorageUtil = blobStorageUtil;
+            _hubContext = hubContext;
         }
 
         public async Task<ProviderProfileDto?> GetProviderProfileAsync(int providerId)
@@ -159,6 +163,40 @@ namespace ServiceManagementAPI.Repositories.ProviderRepository
 
             provider.Services.Add(newService);
             await _context.SaveChangesAsync();
+
+            return true;
+        }
+
+        public async Task<bool> UpdateBookingStatusAsync(int bookingId, BookingStatus status)
+        {
+            var booking = await _context.Bookings
+                .Include(b => b.Customer)
+                .Include(b => b.Service)
+                .FirstOrDefaultAsync(b => b.Id == bookingId);
+
+            if (booking == null)
+            {
+                return false;
+            }
+
+            booking.Status = (int)status;
+            _context.Bookings.Update(booking);
+
+            var notification = new Notification
+            {
+                UserId = booking.Customer.UserId,
+                Type = (int)NotificationTypes.BookingStatusChange,
+                IsRead = false,
+                CreatedAt = DateTime.UtcNow
+            };
+            _context.Notifications.Add(notification);
+
+            await _context.SaveChangesAsync();
+
+            string statusMessage = status == BookingStatus.Approved ? "approved" : "rejected";
+            string notificationMessage = $"Your booking for {booking.Service.Name} has been {statusMessage}.";
+
+            await _hubContext.Clients.User(booking.Customer.UserId.ToString()).SendAsync("ReceiveNotification", notificationMessage);
 
             return true;
         }
