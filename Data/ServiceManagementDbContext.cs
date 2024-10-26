@@ -133,14 +133,10 @@ public partial class ServiceManagementDbContext : DbContext
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnName("createdAt");
             entity.Property(e => e.CustomerId).HasColumnName("customerId");
-            entity.Property(e => e.PaymentStatus)
-                .HasMaxLength(50)
-                .HasColumnName("paymentStatus");
+            entity.Property(e => e.PaymentStatus).HasColumnName("paymentStatus");
             entity.Property(e => e.ScheduledAt).HasColumnName("scheduledAt");
             entity.Property(e => e.ServiceId).HasColumnName("serviceId");
-            entity.Property(e => e.Status)
-                .HasMaxLength(50)
-                .HasColumnName("status");
+            entity.Property(e => e.Status).HasColumnName("status");
             entity.Property(e => e.TotalPrice)
                 .HasColumnType("decimal(10, 2)")
                 .HasColumnName("totalPrice");
@@ -242,7 +238,7 @@ public partial class ServiceManagementDbContext : DbContext
             entity.HasOne(d => d.User).WithMany(p => p.Notifications)
                 .HasForeignKey(d => d.UserId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__Notificat__userI__2180FB33");
+                .HasConstraintName("FK_Notifications_Users");
         });
 
         modelBuilder.Entity<Payment>(entity =>

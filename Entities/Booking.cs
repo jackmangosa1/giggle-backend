@@ -13,9 +13,9 @@ public partial class Booking
 
     public decimal TotalPrice { get; set; }
 
-    public string Status { get; set; } = null!;
+    public int Status { get; set; }
 
-    public string PaymentStatus { get; set; } = null!;
+    public int PaymentStatus { get; set; }
 
     public DateTime CreatedAt { get; set; }
 

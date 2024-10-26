@@ -97,8 +97,6 @@ namespace ServiceManagementAPI.Repositories.CustomerRepository
 
             if (service.Provider == null)
             {
-                // Handle the case where Provider is null
-                // You might want to log this or return an error response
                 return false;
             }
 
@@ -108,8 +106,8 @@ namespace ServiceManagementAPI.Repositories.CustomerRepository
                 CustomerId = bookingDto.CustomerId,
                 TotalPrice = bookingDto.TotalPrice,
                 ScheduledAt = bookingDto.ScheduledAt,
-                Status = "Pending",
-                PaymentStatus = "Unpaid",
+                Status = (int)BookingStatus.Pending,
+                PaymentStatus = (int)PaymentStatus.Unpaid,
                 CreatedAt = DateTime.UtcNow
             };
             _context.Bookings.Add(booking);
