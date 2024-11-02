@@ -11,9 +11,19 @@ public partial class Payment
 
     public decimal Amount { get; set; }
 
-    public string Method { get; set; } = null!;
+    public int Method { get; set; }
 
-    public string Status { get; set; } = null!;
+    public int Status { get; set; }
+
+    public string TransactionId { get; set; } = null!;
+
+    public string TxRef { get; set; } = null!;
+
+    public DateTime CreatedAt { get; set; }
+
+    public DateTime? CompletedAt { get; set; }
+
+    public string? FailureReason { get; set; }
 
     public virtual Booking Booking { get; set; } = null!;
 }

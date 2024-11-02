@@ -7,9 +7,11 @@ using Microsoft.IdentityModel.Tokens;
 using ServiceManagementAPI.Data;
 using ServiceManagementAPI.Hubs;
 using ServiceManagementAPI.Repositories.AuthRepository;
+using ServiceManagementAPI.Repositories.ChatRepository;
 using ServiceManagementAPI.Repositories.CustomerRepository;
 using ServiceManagementAPI.Repositories.ProviderRepository;
 using ServiceManagementAPI.Services.AuthService;
+using ServiceManagementAPI.Services.ChatService;
 using ServiceManagementAPI.Services.CustomerService;
 using ServiceManagementAPI.Services.EmailService;
 using ServiceManagementAPI.Services.ProviderService;
@@ -63,6 +65,9 @@ namespace ServiceManagementAPI
             builder.Services.AddScoped<ICustomerService, CustomerService>();
             builder.Services.AddScoped<IProviderRepository, ProviderRepository>();
             builder.Services.AddScoped<IProviderService, ProviderService>();
+            builder.Services.AddScoped<IChatRepository, ChatRepository>();
+            builder.Services.AddScoped<IChatService, ChatService>();
+
             builder.Services.AddSingleton<BlobStorageUtil>();
 
 
@@ -107,6 +112,7 @@ namespace ServiceManagementAPI
             app.MapControllers();
 
             app.MapHub<NotificationHub>("/notificationHub");
+            app.MapHub<ChatHub>("/chathub");
 
             app.Run();
         }

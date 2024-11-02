@@ -250,12 +250,15 @@ public partial class ServiceManagementDbContext : DbContext
                 .HasColumnType("decimal(10, 2)")
                 .HasColumnName("amount");
             entity.Property(e => e.BookingId).HasColumnName("bookingId");
-            entity.Property(e => e.Method)
-                .HasMaxLength(50)
-                .HasColumnName("method");
-            entity.Property(e => e.Status)
-                .HasMaxLength(50)
-                .HasColumnName("status");
+            entity.Property(e => e.CompletedAt).HasColumnType("datetime");
+            entity.Property(e => e.CreatedAt)
+                .HasDefaultValueSql("(getdate())")
+                .HasColumnType("datetime");
+            entity.Property(e => e.FailureReason).HasMaxLength(255);
+            entity.Property(e => e.Method).HasColumnName("method");
+            entity.Property(e => e.Status).HasColumnName("status");
+            entity.Property(e => e.TransactionId).HasMaxLength(100);
+            entity.Property(e => e.TxRef).HasMaxLength(100);
 
             entity.HasOne(d => d.Booking).WithMany(p => p.Payments)
                 .HasForeignKey(d => d.BookingId)
@@ -270,6 +273,9 @@ public partial class ServiceManagementDbContext : DbContext
             entity.Property(e => e.Id).HasColumnName("id");
             entity.Property(e => e.Bio).HasColumnName("bio");
             entity.Property(e => e.DisplayName).HasMaxLength(200);
+            entity.Property(e => e.PhoneNumber)
+                .HasMaxLength(20)
+                .HasColumnName("phoneNumber");
             entity.Property(e => e.ProfilePictureUrl).HasMaxLength(255);
             entity.Property(e => e.UserId)
                 .HasMaxLength(450)

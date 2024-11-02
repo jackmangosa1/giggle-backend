@@ -58,12 +58,11 @@ namespace ServiceManagementAPI.Controllers
         {
             if (!ModelState.IsValid)
             {
-                return BadRequest(ModelState); // Return 400 Bad Request if the model is invalid
+                return BadRequest(ModelState);
             }
 
             var bookingSuccess = await _userService.CreateBookingAsync(bookingDto);
             return CreatedAtAction(nameof(CreateBooking), new { message = "Booking created successfully." });
         }
-
     }
 }

@@ -15,6 +15,7 @@ CREATE TABLE Providers (
     id INT PRIMARY KEY IDENTITY(1,1),
     userId NVARCHAR(450) NOT NULL,  
     DisplayName NVARCHAR(200), 
+    phoneNumber NVARCHAR(20),
     ProfilePictureUrl NVARCHAR(255),
     bio NVARCHAR(MAX),
     FOREIGN KEY (userId) REFERENCES AspNetUsers(Id)
@@ -98,6 +99,7 @@ CREATE TABLE Messages (
     id INT PRIMARY KEY IDENTITY(1,1),
     senderId NVARCHAR(450) NOT NULL, 
     receiverId NVARCHAR(450) NOT NULL, 
+    IsRead BIT NOT NULL DEFAULT 0,
     content NVARCHAR(MAX) NOT NULL,
     sentAt DATETIME2 NOT NULL DEFAULT GETDATE(),
     FOREIGN KEY (senderId) REFERENCES AspNetUsers(Id),
@@ -109,8 +111,13 @@ CREATE TABLE Payments (
     id INT PRIMARY KEY IDENTITY(1,1),
     bookingId INT NOT NULL,          
     amount DECIMAL(10, 2) NOT NULL,
-    method NVARCHAR(50) NOT NULL,
-    status NVARCHAR(50) NOT NULL,
+    method INT NOT NULL,
+    TransactionId NVARCHAR(100) NOT NULL,
+    TxRef NVARCHAR(100) NOT NULL,          
+    CreatedAt DATETIME NOT NULL DEFAULT GETDATE(),  
+    CompletedAt DATETIME NULL,             
+    FailureReason NVARCHAR(255) NULL,
+    status INT NOT NULL,
     FOREIGN KEY (bookingId) REFERENCES Bookings(id)
 );
 -- Create Notifications table

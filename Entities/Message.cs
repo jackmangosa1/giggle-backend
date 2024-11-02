@@ -15,6 +15,8 @@ public partial class Message
 
     public DateTime SentAt { get; set; }
 
+    public bool IsRead { get; set; }
+
     public virtual AspNetUser Receiver { get; set; } = null!;
 
     public virtual AspNetUser Sender { get; set; } = null!;

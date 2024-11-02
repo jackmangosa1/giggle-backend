@@ -15,6 +15,8 @@ public partial class Provider
 
     public string? ProfilePictureUrl { get; set; }
 
+    public string? PhoneNumber { get; set; }
+
     public virtual ICollection<Service> Services { get; set; } = new List<Service>();
 
     public virtual AspNetUser User { get; set; } = null!;

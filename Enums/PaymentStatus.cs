@@ -5,6 +5,7 @@
         Unpaid,
         Paid,
         Failed,
+        Released,
         Refunded
     }
 }

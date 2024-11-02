@@ -15,6 +15,8 @@ namespace ServiceManagementAPI.Repositories.CustomerRepository
         private readonly BlobStorageUtil _blobStorageUtil;
         private readonly IHubContext<NotificationHub> _hubContext;
 
+
+
         public CustomerRepository(ServiceManagementDbContext context, BlobStorageUtil blobStorageUtil, IHubContext<NotificationHub> hubContext)
         {
             _context = context;
@@ -130,9 +132,5 @@ namespace ServiceManagementAPI.Repositories.CustomerRepository
 
             return true;
         }
-
-
-
-
     }
 }
