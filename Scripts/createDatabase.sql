@@ -1,4 +1,80 @@
-﻿-- Create Customers table
+﻿-- ASP.NET Identity Tables --
+
+-- Users Table
+CREATE TABLE AspNetUsers (
+    Id NVARCHAR(450) NOT NULL PRIMARY KEY,
+    UserName NVARCHAR(256) NULL,
+    NormalizedUserName NVARCHAR(256) NULL,
+    Email NVARCHAR(256) NULL,
+    NormalizedEmail NVARCHAR(256) NULL,
+    EmailConfirmed BIT NOT NULL,
+    PasswordHash NVARCHAR(MAX) NULL,
+    SecurityStamp NVARCHAR(MAX) NULL,
+    ConcurrencyStamp NVARCHAR(MAX) NULL,
+    PhoneNumber NVARCHAR(20) NULL,
+    PhoneNumberConfirmed BIT NOT NULL,
+    TwoFactorEnabled BIT NOT NULL,
+    LockoutEnd DATETIMEOFFSET NULL,
+    LockoutEnabled BIT NOT NULL,
+    AccessFailedCount INT NOT NULL
+);
+
+-- Roles Table
+CREATE TABLE AspNetRoles (
+    Id NVARCHAR(450) NOT NULL PRIMARY KEY,
+    Name NVARCHAR(256) NULL,
+    NormalizedName NVARCHAR(256) NULL,
+    ConcurrencyStamp NVARCHAR(MAX) NULL
+);
+
+-- User Roles Table
+CREATE TABLE AspNetUserRoles (
+    UserId NVARCHAR(450) NOT NULL,
+    RoleId NVARCHAR(450) NOT NULL,
+    PRIMARY KEY (UserId, RoleId),
+    FOREIGN KEY (UserId) REFERENCES AspNetUsers(Id) ON DELETE CASCADE,
+    FOREIGN KEY (RoleId) REFERENCES AspNetRoles(Id) ON DELETE CASCADE
+);
+
+-- Claims Table
+CREATE TABLE AspNetUserClaims (
+    Id INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
+    UserId NVARCHAR(450) NOT NULL,
+    ClaimType NVARCHAR(MAX) NULL,
+    ClaimValue NVARCHAR(MAX) NULL,
+    FOREIGN KEY (UserId) REFERENCES AspNetUsers(Id) ON DELETE CASCADE
+);
+
+-- Role Claims Table
+CREATE TABLE AspNetRoleClaims (
+    Id INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
+    RoleId NVARCHAR(450) NOT NULL,
+    ClaimType NVARCHAR(MAX) NULL,
+    ClaimValue NVARCHAR(MAX) NULL,
+    FOREIGN KEY (RoleId) REFERENCES AspNetRoles(Id) ON DELETE CASCADE
+);
+
+-- Logins Table
+CREATE TABLE AspNetUserLogins (
+    LoginProvider NVARCHAR(450) NOT NULL,
+    ProviderKey NVARCHAR(450) NOT NULL,
+    ProviderDisplayName NVARCHAR(256) NULL,
+    UserId NVARCHAR(450) NOT NULL,
+    PRIMARY KEY (LoginProvider, ProviderKey),
+    FOREIGN KEY (UserId) REFERENCES AspNetUsers(Id) ON DELETE CASCADE
+);
+
+-- Tokens Table
+CREATE TABLE AspNetUserTokens (
+    UserId NVARCHAR(450) NOT NULL,
+    LoginProvider NVARCHAR(450) NOT NULL,
+    Name NVARCHAR(450) NOT NULL,
+    Value NVARCHAR(MAX) NULL,
+    PRIMARY KEY (UserId, LoginProvider, Name),
+    FOREIGN KEY (UserId) REFERENCES AspNetUsers(Id) ON DELETE CASCADE
+);
+
+-- Create Customers table
 CREATE TABLE Customers (
     id INT PRIMARY KEY IDENTITY(1,1),
     userId NVARCHAR(450) NOT NULL,  
@@ -52,7 +128,7 @@ CREATE TABLE Services (
     price DECIMAL(10, 2) NULL,      
     priceType INT NOT NULL,        
     mediaURL NVARCHAR(255),
-    FOREIGN KEY (providerId) REFERENCES ServiceProviders(id),
+    FOREIGN KEY (providerId) REFERENCES Providers(id),
     FOREIGN KEY (categoryId) REFERENCES ServiceCategory(id)
 );
 
@@ -127,5 +203,5 @@ CREATE TABLE Notifications (
     type INT NOT NULL,            
     isRead BIT NOT NULL DEFAULT 0,
     createdAt DATETIME2 NOT NULL DEFAULT GETDATE(),
-    FOREIGN KEY (userId) REFERENCES AspNetUser(Id),
+    FOREIGN KEY (userId) REFERENCES AspNetUsers(Id) 
 );
