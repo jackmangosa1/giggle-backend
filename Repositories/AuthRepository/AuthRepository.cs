@@ -242,30 +242,7 @@ namespace ServiceManagementAPI.Repositories.AuthRepository
             return user != null && await _userManager.IsEmailConfirmedAsync(user);
         }
 
-        public async Task<bool> InitiatePasswordResetAsync(string email)
-        {
-            var user = await _userManager.FindByEmailAsync(email);
-            if (user == null || !await _userManager.IsEmailConfirmedAsync(user))
-            {
-                return true;
-            }
 
-            var token = await _userManager.GeneratePasswordResetTokenAsync(user);
-            var resetLink = UrlGenerator.GeneratePasswordResetLink(user.Id, token, _configuration["ApplicationUrl"]!);
-
-            var emailSubject = "Reset Your Password";
-            var emailBody = $@"
-                <h2>Password Reset Request</h2>
-                <p>We received a request to reset your password. If you did not make this request, please ignore this email.</p>
-                <p>To reset your password, click the link below:</p>
-                <a href='{resetLink}'>Reset Password</a>
-                <p>This link will expire in 24 hours.</p>
-            ";
-
-            await _emailService.SendEmailAsync(user.Email!, emailSubject, emailBody);
-
-            return true;
-        }
 
         public async Task<ForgotPasswordtResultDto> ForgotPasswordAsync(ForgotPasswordDto forgotPasswordDto)
         {
@@ -281,11 +258,23 @@ namespace ServiceManagementAPI.Repositories.AuthRepository
 
             var token = await _userManager.GeneratePasswordResetTokenAsync(user);
             var tokenExpirationInHours = int.Parse(_configuration["TokenExpirationInHours"]!);
-            var encodedToken = System.Web.HttpUtility.UrlEncode(token);
+            // var encodedToken = System.Web.HttpUtility.UrlEncode(token);
+            var encodedToken = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(token));
 
-            var resetUrl = $"{forgotPasswordDto.ClientUri}?email={user.Email}&token={encodedToken}";
+            Console.WriteLine($"ClientUri received: {forgotPasswordDto.ClientUri}");
+            var resetLink = $"{forgotPasswordDto.ClientUri}?email={user.Email}&token={encodedToken}";
+            Console.WriteLine($"Full reset link: {resetLink}");
+
+
+
             var emailSubject = "Reset Password";
-            var emailBody = $"Click <a href='{resetUrl}'>here</a> to reset your password. The link expires in {tokenExpirationInHours} hours.";
+            var emailBody = $@"
+        <h2>Password Reset Request</h2>
+        <p>We received a request to reset your password. If you did not make this request, please ignore this email.</p>
+        <p>To reset your password, click the link below:</p>
+        <a href='{resetLink}'>Reset Password</a>
+        <p>This link will expire in {tokenExpirationInHours} hours.</p>
+    ";
 
             await _emailService.SendEmailAsync(user.Email!, emailSubject, emailBody);
 
@@ -301,7 +290,10 @@ namespace ServiceManagementAPI.Repositories.AuthRepository
                 return new PasswordResetResultDto { Success = false, Errors = new List<string> { "Invalid user" } };
             }
 
-            var decodedToken = System.Web.HttpUtility.UrlDecode(resetPasswordDto.Token);
+            byte[] tokenBytes = Convert.FromBase64String(resetPasswordDto.Token);
+            string decodedToken = System.Text.Encoding.UTF8.GetString(tokenBytes);
+
+            // var decodedToken = System.Web.HttpUtility.UrlDecode(resetPasswordDto.Token);
             var result = await _userManager.ResetPasswordAsync(user, decodedToken, resetPasswordDto.Password);
 
             if (!result.Succeeded)

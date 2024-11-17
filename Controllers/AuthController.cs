@@ -62,9 +62,9 @@ namespace ServiceManagementAPI.Controllers
             {
                 if (result.RequiresEmailConfirmation)
                 {
-                    return BadRequest("Email confirmation required.");
+                    return BadRequest(new { error = "Email confirmation required." });
                 }
-                return BadRequest("Invalid credentials.");
+                return BadRequest(new { error = "Invalid credentials." });
             }
 
             return Ok(result);

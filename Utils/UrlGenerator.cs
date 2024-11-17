@@ -13,7 +13,8 @@ namespace ServiceManagementAPI.Utils
         public static string GeneratePasswordResetLink(string userId, string token, string baseUrl)
         {
             token = HttpUtility.UrlEncode(token);
-            return $"{baseUrl}/reset-password?userId={userId}&token={token}";
+            return $"{baseUrl}?userId={userId}&token={token}";
         }
+
     }
 }
