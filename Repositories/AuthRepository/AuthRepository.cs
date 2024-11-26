@@ -258,7 +258,7 @@ namespace ServiceManagementAPI.Repositories.AuthRepository
 
             var token = await _userManager.GeneratePasswordResetTokenAsync(user);
             var tokenExpirationInHours = int.Parse(_configuration["TokenExpirationInHours"]!);
-            // var encodedToken = System.Web.HttpUtility.UrlEncode(token);
+
             var encodedToken = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(token));
 
             Console.WriteLine($"ClientUri received: {forgotPasswordDto.ClientUri}");
@@ -293,7 +293,7 @@ namespace ServiceManagementAPI.Repositories.AuthRepository
             byte[] tokenBytes = Convert.FromBase64String(resetPasswordDto.Token);
             string decodedToken = System.Text.Encoding.UTF8.GetString(tokenBytes);
 
-            // var decodedToken = System.Web.HttpUtility.UrlDecode(resetPasswordDto.Token);
+
             var result = await _userManager.ResetPasswordAsync(user, decodedToken, resetPasswordDto.Password);
 
             if (!result.Succeeded)

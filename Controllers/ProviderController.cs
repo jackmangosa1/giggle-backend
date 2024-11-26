@@ -55,7 +55,7 @@ namespace ServiceManagementAPI.Controllers
         }
 
         [HttpPost("{providerId}/services")]
-        public async Task<IActionResult> AddService(int providerId, [FromForm] AddServiceDto addServiceDto, IFormFile? imageFile = null)
+        public async Task<IActionResult> AddService(string providerId, [FromForm] AddServiceDto addServiceDto, IFormFile? imageFile = null)
         {
             if (!ModelState.IsValid)
             {

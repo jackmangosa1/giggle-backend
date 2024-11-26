@@ -117,10 +117,10 @@ namespace ServiceManagementAPI.Repositories.ProviderRepository
             return true;
         }
 
-        public async Task<bool> AddServiceAsync(int providerId, AddServiceDto addServiceDto, Stream? imageStream = null)
+        public async Task<bool> AddServiceAsync(string providerId, AddServiceDto addServiceDto, Stream? imageStream = null)
         {
             var provider = await _context.Providers
-                .FirstOrDefaultAsync(p => p.Id == providerId);
+                .FirstOrDefaultAsync(p => p.User.Id == providerId);
 
             if (provider == null)
             {
