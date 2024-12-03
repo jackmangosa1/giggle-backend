@@ -13,7 +13,7 @@ namespace ServiceManagementAPI.Services.ProviderService
             _providerRepository = providerRepository;
         }
 
-        public async Task<ProviderProfileDto?> GetProviderProfileAsync(int providerId)
+        public async Task<ProviderProfileDto?> GetProviderProfileAsync(string providerId)
         {
             return await _providerRepository.GetProviderProfileAsync(providerId);
         }

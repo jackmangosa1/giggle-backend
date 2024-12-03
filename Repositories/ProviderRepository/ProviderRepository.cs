@@ -22,14 +22,14 @@ namespace ServiceManagementAPI.Repositories.ProviderRepository
             _hubContext = hubContext;
         }
 
-        public async Task<ProviderProfileDto?> GetProviderProfileAsync(int providerId)
+        public async Task<ProviderProfileDto?> GetProviderProfileAsync(string providerId)
         {
             var provider = await _context.Providers
                 .Include(p => p.User)
                 .Include(p => p.Skills)
                 .Include(p => p.Services)
                     .ThenInclude(s => s.Category)
-                .FirstOrDefaultAsync(p => p.Id == providerId);
+                .FirstOrDefaultAsync(p => p.User.Id == providerId);
 
             if (provider == null)
             {
@@ -166,6 +166,7 @@ namespace ServiceManagementAPI.Repositories.ProviderRepository
 
             return true;
         }
+
 
         public async Task<bool> UpdateBookingStatusAsync(int bookingId, BookingStatus status)
         {

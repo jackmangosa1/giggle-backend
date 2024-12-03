@@ -17,7 +17,7 @@ namespace ServiceManagementAPI.Controllers
         }
 
         [HttpGet("profile/{providerId}")]
-        public async Task<IActionResult> GetProviderProfile(int providerId)
+        public async Task<IActionResult> GetProviderProfile(string providerId)
         {
             var providerProfile = await _providerService.GetProviderProfileAsync(providerId);
 
@@ -57,6 +57,10 @@ namespace ServiceManagementAPI.Controllers
         [HttpPost("{providerId}/services")]
         public async Task<IActionResult> AddService(string providerId, [FromForm] AddServiceDto addServiceDto, IFormFile? imageFile = null)
         {
+            if (imageFile == null)
+            {
+                Console.WriteLine("No image file received");
+            }
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
