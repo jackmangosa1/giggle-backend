@@ -29,6 +29,10 @@ namespace ServiceManagementAPI.Repositories.ProviderRepository
                 .Include(p => p.Skills)
                 .Include(p => p.Services)
                     .ThenInclude(s => s.Category)
+                .Include(p => p.Services)
+                    .ThenInclude(s => s.Bookings)
+                        .ThenInclude(b => b.CompletedServices)
+                            .ThenInclude(cs => cs.Reviews)
                 .FirstOrDefaultAsync(p => p.User.Id == providerId);
 
             if (provider == null)
@@ -49,6 +53,27 @@ namespace ServiceManagementAPI.Repositories.ProviderRepository
                 PriceType = (PriceType)service.PriceType
             }).ToList();
 
+            var completedServices = provider.Services
+                .SelectMany(service => service.Bookings)
+                .SelectMany(booking => booking.CompletedServices)
+                .Select(completedService => new CompletedServiceDto
+                {
+                    Id = completedService.Id,
+                    Description = completedService.Description,
+                    MediaUrl = completedService.MediaUrl,
+                    CompletedAt = completedService.CompletedAt,
+                    Reviews = completedService.Reviews.Select(review => new ReviewDto
+                    {
+                        Id = review.Id,
+                        UserId = review.UserId,
+                        Rating = review.Rating,
+                        Comment = review.Comment,
+                        CreatedAt = review.CreatedAt,
+                        UserName = review.User.UserName!
+                    }).ToList()
+                })
+                .ToList();
+
             return new ProviderProfileDto
             {
                 Id = provider.Id,
@@ -56,11 +81,14 @@ namespace ServiceManagementAPI.Repositories.ProviderRepository
                 Bio = provider.Bio,
                 Skills = skillNames,
                 Services = serviceDtos,
+                CompletedServices = completedServices,
                 ProfilePictureUrl = provider.ProfilePictureUrl,
                 UserName = provider.User.UserName,
                 Email = provider.User.Email
             };
         }
+
+
 
         public async Task<bool> UpdateProviderProfileAsync(int providerId, UpdateProviderProfileDto updateProviderProfileDto, Stream? imageStream = null)
         {
