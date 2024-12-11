@@ -90,11 +90,11 @@ namespace ServiceManagementAPI.Repositories.ProviderRepository
 
 
 
-        public async Task<bool> UpdateProviderProfileAsync(int providerId, UpdateProviderProfileDto updateProviderProfileDto, Stream? imageStream = null)
+        public async Task<bool> UpdateProviderProfileAsync(string providerId, UpdateProviderProfileDto updateProviderProfileDto, Stream? imageStream = null)
         {
             var provider = await _context.Providers
                 .Include(p => p.Skills)
-                .FirstOrDefaultAsync(p => p.Id == providerId);
+                .FirstOrDefaultAsync(p => p.User.Id == providerId);
 
             if (provider == null)
             {
@@ -195,6 +195,70 @@ namespace ServiceManagementAPI.Repositories.ProviderRepository
             return true;
         }
 
+        public async Task<bool> UpdateServiceAsync(string providerId, int serviceId, UpdateServiceDto updateServiceDto, Stream? imageStream = null)
+        {
+            var service = await _context.Services
+                .Include(s => s.Provider)
+                .FirstOrDefaultAsync(s => s.Id == serviceId && s.Provider.User.Id == providerId);
+
+            if (service == null)
+            {
+                return false;
+            }
+
+            var category = await _context.ServiceCategories
+                .FirstOrDefaultAsync(c => c.Name.ToLower() == updateServiceDto.CategoryName.ToLower());
+
+            if (category == null)
+            {
+                category = new ServiceCategory
+                {
+                    Name = updateServiceDto.CategoryName
+                };
+
+                _context.ServiceCategories.Add(category);
+                await _context.SaveChangesAsync();
+            }
+
+            string? mediaUrl = service.MediaUrl;
+
+            if (imageStream != null)
+            {
+                var containerName = "service-images";
+                var uniqueFileName = Guid.NewGuid().ToString();
+                mediaUrl = await _blobStorageUtil.UploadImageToBlobAsync(imageStream, uniqueFileName, containerName);
+            }
+
+            service.Name = updateServiceDto.Name;
+            service.Description = updateServiceDto.Description;
+            service.Price = updateServiceDto.Price;
+            service.PriceType = (int)updateServiceDto.PriceType;
+            service.CategoryId = category.Id;
+            service.MediaUrl = mediaUrl;
+
+            _context.Services.Update(service);
+            await _context.SaveChangesAsync();
+
+            return true;
+        }
+
+        public async Task<bool> DeleteServiceAsync(string providerId, int serviceId)
+        {
+            var service = await _context.Services
+                .Include(s => s.Provider)
+                .FirstOrDefaultAsync(s => s.Id == serviceId && s.Provider.User.Id == providerId);
+
+            if (service == null)
+            {
+                return false;
+            }
+
+            _context.Services.Remove(service);
+            await _context.SaveChangesAsync();
+
+            return true;
+        }
+
 
         public async Task<bool> UpdateBookingStatusAsync(int bookingId, BookingStatus status)
         {
@@ -229,6 +293,52 @@ namespace ServiceManagementAPI.Repositories.ProviderRepository
 
             return true;
         }
+
+        public async Task<ServiceDto?> GetServiceByIdAsync(int serviceId)
+        {
+            var service = await _context.Services
+                .Include(s => s.Category)
+                .FirstOrDefaultAsync(s => s.Id == serviceId);
+
+            if (service == null)
+            {
+                return null;
+            }
+
+            return new ServiceDto
+            {
+                Id = service.Id,
+                Name = service.Name,
+                Description = service.Description,
+                Price = service.Price,
+                MediaUrl = service.MediaUrl,
+                CategoryName = service.Category?.Name!,
+                PriceType = (PriceType)service.PriceType
+            };
+        }
+
+        public async Task<List<ServiceCategoryDto>> GetServiceCategoriesAsync()
+        {
+            var categories = await _context.ServiceCategories.ToListAsync();
+
+            return categories.Select(category => new ServiceCategoryDto
+            {
+                Id = category.Id,
+                Name = category.Name
+            }).ToList();
+        }
+
+        public async Task<List<SkillDto>> GetSkillsAsync()
+        {
+            var skills = await _context.Skills.ToListAsync();
+
+            return skills.Select(skill => new SkillDto
+            {
+                Id = skill.Id,
+                Name = skill.Name
+            }).ToList();
+        }
+
 
 
     }

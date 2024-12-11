@@ -30,7 +30,7 @@ namespace ServiceManagementAPI.Controllers
         }
 
         [HttpPut("profile/{providerId}")]
-        public async Task<IActionResult> UpdateProviderProfile(int providerId, [FromForm] UpdateProviderProfileDto updateProviderProfileDto, IFormFile? imageFile = null)
+        public async Task<IActionResult> UpdateProviderProfile(string providerId, [FromForm] UpdateProviderProfileDto updateProviderProfileDto, IFormFile? imageFile = null)
         {
             if (!ModelState.IsValid)
             {
@@ -81,6 +81,68 @@ namespace ServiceManagementAPI.Controllers
 
             return Ok("Service added successfully.");
         }
+
+        [HttpPut("{providerId}/services/{serviceId}")]
+        public async Task<IActionResult> UpdateService(string providerId, int serviceId, [FromForm] UpdateServiceDto updateServiceDto, IFormFile? imageFile = null)
+        {
+            Stream? imageStream = null;
+
+            if (imageFile != null)
+            {
+                imageStream = imageFile.OpenReadStream();
+            }
+
+            var result = await _providerService.UpdateServiceAsync(providerId, serviceId, updateServiceDto, imageStream);
+
+            if (!result)
+            {
+                return NotFound(new { message = "Service not found" });
+            }
+
+            return Ok(new { message = "Service updated successfully" });
+        }
+
+        [HttpDelete("{providerId}/services/{serviceId}")]
+        public async Task<IActionResult> DeleteService(string providerId, int serviceId)
+        {
+            var result = await _providerService.DeleteServiceAsync(providerId, serviceId);
+
+            if (!result)
+            {
+                return NotFound(new { message = "Service not found" });
+            }
+
+            return Ok(new { message = "Service deleted successfully" });
+        }
+
+        [HttpGet("services/{serviceId}")]
+        public async Task<IActionResult> GetServiceById(int serviceId)
+        {
+            var service = await _providerService.GetServiceByIdAsync(serviceId);
+
+            if (service == null)
+            {
+                return NotFound(new { message = "Service not found" });
+            }
+
+            return Ok(service);
+        }
+
+        [HttpGet("services/categories")]
+        public async Task<IActionResult> GetServiceCategories()
+        {
+            var categories = await _providerService.GetServiceCategoriesAsync();
+            return Ok(categories);
+        }
+
+        [HttpGet("services/skills")]
+        public async Task<IActionResult> GetSkills()
+        {
+            var categories = await _providerService.GetSkillsAsync();
+            return Ok(categories);
+        }
+
+
 
         [HttpPut("bookings/{bookingId}/status")]
         public async Task<IActionResult> UpdateBookingStatus(int bookingId, [FromBody] BookingStatus bookingStatus)

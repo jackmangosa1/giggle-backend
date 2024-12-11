@@ -18,7 +18,7 @@ namespace ServiceManagementAPI.Services.ProviderService
             return await _providerRepository.GetProviderProfileAsync(providerId);
         }
 
-        public async Task<bool> UpdateProviderProfileAsync(int providerId, UpdateProviderProfileDto updateProviderProfileDto, Stream imageStream = null!)
+        public async Task<bool> UpdateProviderProfileAsync(string providerId, UpdateProviderProfileDto updateProviderProfileDto, Stream imageStream = null!)
         {
             return await _providerRepository.UpdateProviderProfileAsync(providerId, updateProviderProfileDto, imageStream);
         }
@@ -28,9 +28,34 @@ namespace ServiceManagementAPI.Services.ProviderService
             return await _providerRepository.AddServiceAsync(providerId, addServiceDto, imageStream);
         }
 
+        public async Task<bool> UpdateServiceAsync(string providerId, int serviceId, UpdateServiceDto updateServiceDto, Stream? imageStream = null!)
+        {
+            return await _providerRepository.UpdateServiceAsync(providerId, serviceId, updateServiceDto, imageStream);
+        }
+
+        public async Task<ServiceDto?> GetServiceByIdAsync(int serviceId)
+        {
+            return await _providerRepository.GetServiceByIdAsync(serviceId);
+        }
+
+        public async Task<bool> DeleteServiceAsync(string providerId, int serviceId)
+        {
+            return await _providerRepository.DeleteServiceAsync(providerId, serviceId);
+        }
+
         public async Task<bool> UpdateBookingStatusAsync(int bookingId, BookingStatus bookingStatus)
         {
             return await _providerRepository.UpdateBookingStatusAsync(bookingId, bookingStatus);
+        }
+
+        public async Task<List<ServiceCategoryDto>> GetServiceCategoriesAsync()
+        {
+            return await _providerRepository.GetServiceCategoriesAsync();
+        }
+
+        public async Task<List<SkillDto>> GetSkillsAsync()
+        {
+            return await _providerRepository.GetSkillsAsync();
         }
     }
 }
