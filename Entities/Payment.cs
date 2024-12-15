@@ -5,25 +5,29 @@ namespace ServiceManagementAPI.Entities;
 
 public partial class Payment
 {
-    public int Id { get; set; }
+    public int PaymentId { get; set; }
 
     public int BookingId { get; set; }
 
-    public decimal Amount { get; set; }
-
-    public int Method { get; set; }
-
-    public int Status { get; set; }
+    public int CustomerId { get; set; }
 
     public string TransactionId { get; set; } = null!;
 
-    public string TxRef { get; set; } = null!;
+    public int PaymentStatus { get; set; }
 
-    public DateTime CreatedAt { get; set; }
+    public decimal PaymentAmount { get; set; }
 
-    public DateTime? CompletedAt { get; set; }
+    public string Currency { get; set; } = null!;
 
-    public string? FailureReason { get; set; }
+    public string? PaymentMethod { get; set; }
+
+    public DateTime? PaymentDate { get; set; }
+
+    public decimal? EscrowAmount { get; set; }
+
+    public decimal? ReleasedAmount { get; set; }
 
     public virtual Booking Booking { get; set; } = null!;
+
+    public virtual Customer Customer { get; set; } = null!;
 }

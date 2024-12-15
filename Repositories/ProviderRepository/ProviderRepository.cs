@@ -272,7 +272,24 @@ namespace ServiceManagementAPI.Repositories.ProviderRepository
                 return false;
             }
 
-            booking.Status = (int)status;
+            switch (status)
+            {
+                case BookingStatus.Approved:
+                    booking.BookingStatus = (int)BookingStatus.Approved;
+                    break;
+                case BookingStatus.Rejected:
+                    booking.BookingStatus = (int)BookingStatus.Rejected;
+                    break;
+                case BookingStatus.Cancelled:
+                    booking.BookingStatus = (int)BookingStatus.Cancelled;
+                    break;
+                case BookingStatus.Completed:
+                    booking.BookingStatus = (int)BookingStatus.Completed;
+                    break;
+                default:
+                    return false;
+            }
+
             _context.Bookings.Update(booking);
 
             var notification = new Notification
@@ -286,13 +303,28 @@ namespace ServiceManagementAPI.Repositories.ProviderRepository
 
             await _context.SaveChangesAsync();
 
-            string statusMessage = status == BookingStatus.Approved ? "approved" : "rejected";
+            string statusMessage = status switch
+            {
+                BookingStatus.Approved => "approved",
+                BookingStatus.Rejected => "rejected",
+                BookingStatus.Cancelled => "cancelled",
+                BookingStatus.Completed => "service completed",
+                _ => "status changed"
+            };
+
             string notificationMessage = $"Your booking for {booking.Service.Name} has been {statusMessage}.";
 
             await _hubContext.Clients.User(booking.Customer.UserId.ToString()).SendAsync("ReceiveNotification", notificationMessage);
 
+            if (status == BookingStatus.Completed)
+            {
+                string providerNotificationMessage = $"You have marked the service for {booking.Service.Name} as completed.";
+                await _hubContext.Clients.User(booking.Service.Provider.UserId.ToString()).SendAsync("ReceiveNotification", providerNotificationMessage);
+            }
+
             return true;
         }
+
 
         public async Task<ServiceDto?> GetServiceByIdAsync(int serviceId)
         {
@@ -338,8 +370,5 @@ namespace ServiceManagementAPI.Repositories.ProviderRepository
                 Name = skill.Name
             }).ToList();
         }
-
-
-
     }
 }

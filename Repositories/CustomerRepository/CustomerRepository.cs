@@ -86,18 +86,13 @@ namespace ServiceManagementAPI.Repositories.CustomerRepository
 
         public async Task<bool> CreateBookingAsync(BookingDto bookingDto)
         {
-
             var service = await _context.Services
                 .Include(s => s.Provider)
                 .FirstOrDefaultAsync(s => s.Id == bookingDto.ServiceId);
+
             var customer = await _context.Customers.FindAsync(bookingDto.CustomerId);
 
-            if (service == null || customer == null)
-            {
-                return false;
-            }
-
-            if (service.Provider == null)
+            if (service == null || customer == null || service.Provider == null)
             {
                 return false;
             }
@@ -106,12 +101,13 @@ namespace ServiceManagementAPI.Repositories.CustomerRepository
             {
                 ServiceId = bookingDto.ServiceId,
                 CustomerId = bookingDto.CustomerId,
-                TotalPrice = bookingDto.TotalPrice,
-                ScheduledAt = bookingDto.ScheduledAt,
-                Status = (int)BookingStatus.Pending,
-                PaymentStatus = (int)PaymentStatus.Unpaid,
+                Date = bookingDto.Date,
+                Time = bookingDto.Time,
+                BookingStatus = (int)BookingStatus.Pending,
+                PaymentStatus = (int)PaymentStatus.Pending,
                 CreatedAt = DateTime.UtcNow
             };
+
             _context.Bookings.Add(booking);
 
             var notification = new Notification
@@ -121,6 +117,7 @@ namespace ServiceManagementAPI.Repositories.CustomerRepository
                 IsRead = false,
                 CreatedAt = DateTime.UtcNow
             };
+
             _context.Notifications.Add(notification);
 
             await _context.SaveChangesAsync();
@@ -128,9 +125,11 @@ namespace ServiceManagementAPI.Repositories.CustomerRepository
             string serviceName = service.Name;
             string notificationMessage = $"You have a new booking for {serviceName}";
 
-            await _hubContext.Clients.User(service.ProviderId.ToString()).SendAsync("ReceiveNotification", notificationMessage);
+            await _hubContext.Clients.User(service.ProviderId.ToString())
+                .SendAsync("ReceiveNotification", notificationMessage);
 
             return true;
         }
+
     }
 }

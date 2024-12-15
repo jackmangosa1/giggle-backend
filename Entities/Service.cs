@@ -17,9 +17,9 @@ public partial class Service
 
     public decimal? Price { get; set; }
 
-    public string? MediaUrl { get; set; }
-
     public int PriceType { get; set; }
+
+    public string? MediaUrl { get; set; }
 
     public virtual ICollection<Booking> Bookings { get; set; } = new List<Booking>();
 

@@ -7,21 +7,31 @@ public partial class Booking
 {
     public int Id { get; set; }
 
-    public int ServiceId { get; set; }
-
     public int CustomerId { get; set; }
 
-    public decimal TotalPrice { get; set; }
+    public int ServiceId { get; set; }
 
-    public int Status { get; set; }
+    public DateOnly Date { get; set; }
+
+    public TimeOnly Time { get; set; }
+
+    public int BookingStatus { get; set; }
 
     public int PaymentStatus { get; set; }
 
-    public DateTime CreatedAt { get; set; }
+    public decimal PaymentAmount { get; set; }
 
-    public DateTime ScheduledAt { get; set; }
+    public string? PaymentMethod { get; set; }
 
-    public DateTime? CompletedAt { get; set; }
+    public decimal? EscrowAmount { get; set; }
+
+    public DateTime? CreatedAt { get; set; }
+
+    public DateTime? UpdatedAt { get; set; }
+
+    public DateTime? CancelledAt { get; set; }
+
+    public string? CancellationReason { get; set; }
 
     public virtual ICollection<CompletedService> CompletedServices { get; set; } = new List<CompletedService>();
 

@@ -9,13 +9,13 @@ public partial class Provider
 
     public string UserId { get; set; } = null!;
 
-    public string? Bio { get; set; }
-
     public string? DisplayName { get; set; }
+
+    public string? PhoneNumber { get; set; }
 
     public string? ProfilePictureUrl { get; set; }
 
-    public string? PhoneNumber { get; set; }
+    public string? Bio { get; set; }
 
     public virtual ICollection<Service> Services { get; set; } = new List<Service>();
 

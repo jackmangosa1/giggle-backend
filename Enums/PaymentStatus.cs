@@ -2,10 +2,9 @@
 {
     public enum PaymentStatus
     {
-        Unpaid,
-        Paid,
-        Failed,
+        Pending,
+        Escrow,
         Released,
-        Refunded
+        Refunded,
     }
 }
