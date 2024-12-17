@@ -64,5 +64,23 @@ namespace ServiceManagementAPI.Controllers
             var bookingSuccess = await _userService.CreateBookingAsync(bookingDto);
             return CreatedAtAction(nameof(CreateBooking), new { message = "Booking created successfully." });
         }
+
+        [HttpGet("search-providers")]
+        public async Task<IActionResult> SearchProviders([FromQuery] string searchTerm)
+        {
+            if (string.IsNullOrWhiteSpace(searchTerm))
+            {
+                return BadRequest(new { message = "Search term cannot be empty" });
+            }
+
+            var providers = await _userService.SearchProvidersAsync(searchTerm);
+
+            if (providers == null || !providers.Any())
+            {
+                return NotFound(new { message = "No providers found matching the search term" });
+            }
+
+            return Ok(providers);
+        }
     }
 }

@@ -5,25 +5,30 @@ namespace ServiceManagementAPI.Services.CustomerService
 {
     public class CustomerService : ICustomerService
     {
-        private readonly ICustomerRepository _userRepository;
-        public CustomerService(ICustomerRepository userRepository)
+        private readonly ICustomerRepository _customerRepository;
+        public CustomerService(ICustomerRepository customerRepository)
         {
-            _userRepository = userRepository;
+            _customerRepository = customerRepository;
         }
 
         public async Task<CustomerProfileDto?> GetCustomerProfileAsync(int customerId)
         {
-            return await _userRepository.GetCustomerProfileAsync(customerId);
+            return await _customerRepository.GetCustomerProfileAsync(customerId);
         }
 
         public async Task<bool> UpdateCustomerProfileAsync(int customerId, UpdateCustomerProfileDto updateCustomerProfileDto, Stream imageStream = null!)
         {
-            return await _userRepository.UpdateCustomerProfileAsync(customerId, updateCustomerProfileDto, imageStream);
+            return await _customerRepository.UpdateCustomerProfileAsync(customerId, updateCustomerProfileDto, imageStream);
         }
 
         public async Task<bool> CreateBookingAsync(BookingDto bookingDto)
         {
-            return await _userRepository.CreateBookingAsync(bookingDto);
+            return await _customerRepository.CreateBookingAsync(bookingDto);
+        }
+
+        public async Task<List<ProviderDto>> SearchProvidersAsync(string searchTerm)
+        {
+            return await _customerRepository.SearchProvidersAsync(searchTerm);
         }
     }
 }

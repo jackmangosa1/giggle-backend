@@ -131,5 +131,38 @@ namespace ServiceManagementAPI.Repositories.CustomerRepository
             return true;
         }
 
+        public async Task<List<ProviderDto>> SearchProvidersAsync(string searchTerm)
+        {
+            if (string.IsNullOrWhiteSpace(searchTerm))
+            {
+                return new List<ProviderDto>();
+            }
+
+            searchTerm = searchTerm.Trim();
+
+            var providers = await _context.Providers
+                .Include(p => p.Services)
+                    .ThenInclude(s => s.Category)
+                .Include(p => p.Skills)
+                .Where(p =>
+                    p.DisplayName!.Contains(searchTerm) ||
+                    p.Services.Any(s =>
+                        s.Name.Contains(searchTerm) ||
+                        s.Category.Name.Contains(searchTerm)) ||
+                    p.Skills.Any(skill => skill.Name.Contains(searchTerm))
+                )
+                .Select(p => new ProviderDto
+                {
+                    ProviderId = p.User.Id,
+                    DisplayName = p.DisplayName!,
+                    ProfilePictureUrl = p.ProfilePictureUrl,
+                    Bio = p.Bio,
+                })
+                .ToListAsync();
+
+            return providers;
+        }
+
+
     }
 }
