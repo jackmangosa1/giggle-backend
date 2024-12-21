@@ -86,11 +86,13 @@ namespace ServiceManagementAPI.Repositories.CustomerRepository
 
         public async Task<bool> CreateBookingAsync(BookingDto bookingDto)
         {
+            DateOnly date = DateOnly.Parse(bookingDto.Date);
+            TimeOnly time = TimeOnly.Parse(bookingDto.Time);
             var service = await _context.Services
                 .Include(s => s.Provider)
                 .FirstOrDefaultAsync(s => s.Id == bookingDto.ServiceId);
 
-            var customer = await _context.Customers.FindAsync(bookingDto.CustomerId);
+            var customer = _context.Customers.FirstOrDefault(c => c.UserId == bookingDto.CustomerId);
 
             if (service == null || customer == null || service.Provider == null)
             {
@@ -100,9 +102,9 @@ namespace ServiceManagementAPI.Repositories.CustomerRepository
             var booking = new Booking
             {
                 ServiceId = bookingDto.ServiceId,
-                CustomerId = bookingDto.CustomerId,
-                Date = bookingDto.Date,
-                Time = bookingDto.Time,
+                CustomerId = customer.Id,
+                Date = date,
+                Time = time,
                 BookingStatus = (int)BookingStatus.Pending,
                 PaymentStatus = (int)PaymentStatus.Pending,
                 CreatedAt = DateTime.UtcNow
