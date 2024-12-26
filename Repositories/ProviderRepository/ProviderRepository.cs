@@ -7,6 +7,7 @@ using ServiceManagementAPI.Enums;
 using ServiceManagementAPI.Hubs;
 using ServiceManagementAPI.Utils;
 
+
 namespace ServiceManagementAPI.Repositories.ProviderRepository
 {
     public class ProviderRepository : IProviderRepository
@@ -280,9 +281,6 @@ namespace ServiceManagementAPI.Repositories.ProviderRepository
                 case BookingStatus.Rejected:
                     booking.BookingStatus = (int)BookingStatus.Rejected;
                     break;
-                case BookingStatus.Cancelled:
-                    booking.BookingStatus = (int)BookingStatus.Cancelled;
-                    break;
                 case BookingStatus.Completed:
                     booking.BookingStatus = (int)BookingStatus.Completed;
                     break;
@@ -307,7 +305,6 @@ namespace ServiceManagementAPI.Repositories.ProviderRepository
             {
                 BookingStatus.Approved => "approved",
                 BookingStatus.Rejected => "rejected",
-                BookingStatus.Cancelled => "cancelled",
                 BookingStatus.Completed => "service completed",
                 _ => "status changed"
             };
@@ -316,11 +313,11 @@ namespace ServiceManagementAPI.Repositories.ProviderRepository
 
             await _hubContext.Clients.User(booking.Customer.UserId.ToString()).SendAsync("ReceiveNotification", notificationMessage);
 
-            if (status == BookingStatus.Completed)
-            {
-                string providerNotificationMessage = $"You have marked the service for {booking.Service.Name} as completed.";
-                await _hubContext.Clients.User(booking.Service.Provider.UserId.ToString()).SendAsync("ReceiveNotification", providerNotificationMessage);
-            }
+            //if (status == BookingStatus.Completed)
+            //{
+            //    string providerNotificationMessage = $"You have marked the service for {booking.Service.Name} as completed.";
+            //    await _hubContext.Clients.User(booking.Service.Provider.UserId.ToString()).SendAsync("ReceiveNotification", providerNotificationMessage);
+            //}
 
             return true;
         }
@@ -370,5 +367,28 @@ namespace ServiceManagementAPI.Repositories.ProviderRepository
                 Name = skill.Name
             }).ToList();
         }
+
+        public async Task<List<BookingDetailsDto>> GetAllBookingsAsync(string providerUserId)
+        {
+            var bookings = await _context.Bookings
+                .Include(b => b.Customer)
+                .Include(b => b.Service)
+                .Where(b => b.Service.Provider.UserId == providerUserId)
+                .Select(b => new BookingDetailsDto
+                {
+                    BookingId = b.Id,
+                    CustomerName = b.Customer.FullName ?? "Unknown",
+                    ServiceName = b.Service.Name,
+                    Price = b.Service.Price ?? 0m,
+                    Date = b.Date,
+                    Time = b.Time,
+                    PaymentStatus = EnumConverter.GetPaymentStatus(b.PaymentStatus),
+                    BookingStatus = EnumConverter.GetBookingStatus(b.BookingStatus)
+                })
+                .ToListAsync();
+
+            return bookings;
+        }
+
     }
 }

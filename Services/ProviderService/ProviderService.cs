@@ -57,5 +57,11 @@ namespace ServiceManagementAPI.Services.ProviderService
         {
             return await _providerRepository.GetSkillsAsync();
         }
+
+        public async Task<List<BookingDetailsDto>> GetAllBookingsAsync(string providerId)
+        {
+            return await _providerRepository.GetAllBookingsAsync(providerId);
+        }
+
     }
 }

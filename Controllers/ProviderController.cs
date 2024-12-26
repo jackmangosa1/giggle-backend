@@ -162,5 +162,19 @@ namespace ServiceManagementAPI.Controllers
             return Ok(new { message = "Booking status updated successfully" });
         }
 
+        [HttpGet("bookings/{providerUserId}")]
+        public async Task<IActionResult> GetAllBookings(string providerUserId)
+        {
+            var bookings = await _providerService.GetAllBookingsAsync(providerUserId);
+
+            if (!bookings.Any())
+            {
+                return NotFound(new { message = "No bookings found for this provider" });
+            }
+
+            return Ok(bookings);
+        }
+
+
     }
 }

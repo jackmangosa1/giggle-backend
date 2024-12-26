@@ -14,5 +14,6 @@ namespace ServiceManagementAPI.Services.ProviderService
         Task<bool> UpdateBookingStatusAsync(int bookingId, BookingStatus bookingStatus);
         Task<List<ServiceCategoryDto>> GetServiceCategoriesAsync();
         Task<List<SkillDto>> GetSkillsAsync();
+        Task<List<BookingDetailsDto>> GetAllBookingsAsync(string providerId);
     }
 }

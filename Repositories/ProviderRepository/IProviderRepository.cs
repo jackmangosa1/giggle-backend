@@ -17,5 +17,6 @@ namespace ServiceManagementAPI.Repositories.ProviderRepository
 
         Task<List<ServiceCategoryDto>> GetServiceCategoriesAsync();
         Task<List<SkillDto>> GetSkillsAsync();
+        Task<List<BookingDetailsDto>> GetAllBookingsAsync(string providerId);
     }
 }
