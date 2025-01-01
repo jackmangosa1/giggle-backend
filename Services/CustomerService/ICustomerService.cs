@@ -8,5 +8,6 @@ namespace ServiceManagementAPI.Services.CustomerService
         Task<CustomerProfileDto?> GetCustomerProfileAsync(int customerId);
         Task<bool> CreateBookingAsync(BookingDto bookingDto);
         Task<List<ProviderDto>> SearchProvidersAsync(string searchTerm);
+        Task<List<NotificationDto>> GetNotificationsByUserIdAsync(string userId);
     }
 }

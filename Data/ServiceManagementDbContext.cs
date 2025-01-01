@@ -1,4 +1,6 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using System;
+using System.Collections.Generic;
+using Microsoft.EntityFrameworkCore;
 using ServiceManagementAPI.Entities;
 
 namespace ServiceManagementAPI.Data;
@@ -47,6 +49,9 @@ public partial class ServiceManagementDbContext : DbContext
     public virtual DbSet<ServiceCategory> ServiceCategories { get; set; }
 
     public virtual DbSet<Skill> Skills { get; set; }
+
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        => optionsBuilder.UseSqlServer("Name=ConnectionStrings:DefaultConnectionString");
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -244,6 +249,7 @@ public partial class ServiceManagementDbContext : DbContext
             entity.HasKey(e => e.Id).HasName("PK__Notifica__3213E83F4EE90B95");
 
             entity.Property(e => e.Id).HasColumnName("id");
+            entity.Property(e => e.BookingStatus).HasColumnName("bookingStatus");
             entity.Property(e => e.CreatedAt)
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnName("createdAt");

@@ -165,6 +165,25 @@ namespace ServiceManagementAPI.Repositories.CustomerRepository
             return providers;
         }
 
+        public async Task<List<NotificationDto>> GetNotificationsByUserIdAsync(string userId)
+        {
+            var notifications = await _context.Notifications
+        .Where(n => n.UserId == userId)
+        .OrderByDescending(n => n.CreatedAt)
+        .Select(n => new NotificationDto
+        {
+            Id = n.Id,
+            Type = (NotificationTypes)n.Type,
+            Date = n.CreatedAt.ToString("yyyy-MM-ddTHH:mm:ss.sssZ"),
+            BookingStatus = n.BookingStatus,
+            Status = n.IsRead ? "read" : "notRead"
+        })
+        .ToListAsync();
+
+            return notifications;
+        }
+
+
 
     }
 }

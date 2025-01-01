@@ -92,13 +92,15 @@ namespace ServiceManagementAPI
 
             builder.Services.AddCors(options =>
             {
-                options.AddPolicy("AllowAllOrigins", builder =>
+                options.AddPolicy("AllowAllOrigins", policy =>
                 {
-                    builder.AllowAnyOrigin()
-                           .AllowAnyMethod()
-                           .AllowAnyHeader();
+                    policy.WithOrigins("http://localhost:3000")
+                          .AllowAnyMethod()
+                          .AllowAnyHeader()
+                          .AllowCredentials();
                 });
             });
+
 
             builder.Services.AddSignalR();
 
@@ -123,8 +125,8 @@ namespace ServiceManagementAPI
 
             app.MapControllers();
 
-            app.MapHub<NotificationHub>("/notificationHub");
-            app.MapHub<ChatHub>("/chathub");
+            app.MapHub<NotificationHub>("/notificationHub").RequireCors("AllowAllOrigins");
+            app.MapHub<ChatHub>("/chathub").RequireCors("AllowAllOrigins");
 
             app.Run();
         }

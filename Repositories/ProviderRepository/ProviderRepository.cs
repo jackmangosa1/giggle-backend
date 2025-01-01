@@ -294,6 +294,7 @@ namespace ServiceManagementAPI.Repositories.ProviderRepository
             {
                 UserId = booking.Customer.UserId,
                 Type = (int)NotificationTypes.BookingStatusChange,
+                BookingStatus = (int)status,
                 IsRead = false,
                 CreatedAt = DateTime.UtcNow
             };
@@ -311,13 +312,7 @@ namespace ServiceManagementAPI.Repositories.ProviderRepository
 
             string notificationMessage = $"Your booking for {booking.Service.Name} has been {statusMessage}.";
 
-            await _hubContext.Clients.User(booking.Customer.UserId.ToString()).SendAsync("ReceiveNotification", notificationMessage);
-
-            //if (status == BookingStatus.Completed)
-            //{
-            //    string providerNotificationMessage = $"You have marked the service for {booking.Service.Name} as completed.";
-            //    await _hubContext.Clients.User(booking.Service.Provider.UserId.ToString()).SendAsync("ReceiveNotification", providerNotificationMessage);
-            //}
+            await _hubContext.Clients.All.SendAsync("ReceiveNotification", notificationMessage);
 
             return true;
         }

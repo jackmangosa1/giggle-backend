@@ -30,5 +30,10 @@ namespace ServiceManagementAPI.Services.CustomerService
         {
             return await _customerRepository.SearchProvidersAsync(searchTerm);
         }
+
+        public async Task<List<NotificationDto>> GetNotificationsByUserIdAsync(string userId)
+        {
+            return await _customerRepository.GetNotificationsByUserIdAsync(userId);
+        }
     }
 }

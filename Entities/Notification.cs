@@ -15,5 +15,7 @@ public partial class Notification
 
     public DateTime CreatedAt { get; set; }
 
+    public int? BookingStatus { get; set; }
+
     public virtual AspNetUser User { get; set; } = null!;
 }
