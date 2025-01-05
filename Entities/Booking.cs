@@ -37,6 +37,8 @@ public partial class Booking
 
     public virtual Customer Customer { get; set; } = null!;
 
+    public virtual ICollection<Notification> Notifications { get; set; } = new List<Notification>();
+
     public virtual ICollection<Payment> Payments { get; set; } = new List<Payment>();
 
     public virtual Service Service { get; set; } = null!;

@@ -265,6 +265,7 @@ namespace ServiceManagementAPI.Repositories.ProviderRepository
         {
             var booking = await _context.Bookings
                 .Include(b => b.Customer)
+                    .ThenInclude(c => c.User)
                 .Include(b => b.Service)
                 .FirstOrDefaultAsync(b => b.Id == bookingId);
 
@@ -296,7 +297,11 @@ namespace ServiceManagementAPI.Repositories.ProviderRepository
                 Type = (int)NotificationTypes.BookingStatusChange,
                 BookingStatus = (int)status,
                 IsRead = false,
-                CreatedAt = DateTime.UtcNow
+                CreatedAt = DateTime.UtcNow,
+                BookingId = bookingId,
+                // CustomerName = booking.Customer.FullName,
+                Email = booking.Customer.User.Email,
+                // PhoneNumber = booking.Customer.PhoneNumber
             };
             _context.Notifications.Add(notification);
 

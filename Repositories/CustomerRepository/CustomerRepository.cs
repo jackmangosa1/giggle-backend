@@ -176,14 +176,16 @@ namespace ServiceManagementAPI.Repositories.CustomerRepository
             Type = (NotificationTypes)n.Type,
             Date = n.CreatedAt.ToString("yyyy-MM-ddTHH:mm:ss.sssZ"),
             BookingStatus = n.BookingStatus,
-            Status = n.IsRead ? "read" : "notRead"
+            Status = n.IsRead ? "read" : "notRead",
+            BookingId = n.BookingId,
+            CustomerName = n.Booking != null ? n.Booking.Customer.FullName : null,
+            Email = n.Booking != null ? n.Booking.Customer.User.Email : null,
+            PhoneNumber = n.Booking != null ? n.Booking.Customer.PhoneNumber : null,
+            Amount = n.Booking != null ? n.Booking.Service.Price : null
         })
         .ToListAsync();
 
             return notifications;
         }
-
-
-
     }
 }

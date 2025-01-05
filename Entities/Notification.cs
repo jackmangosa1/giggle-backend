@@ -17,5 +17,15 @@ public partial class Notification
 
     public int? BookingStatus { get; set; }
 
+    public int? BookingId { get; set; }
+
+    public string? CustomerName { get; set; }
+
+    public string? Email { get; set; }
+
+    public string? PhoneNumber { get; set; }
+
+    public virtual Booking? Booking { get; set; }
+
     public virtual AspNetUser User { get; set; } = null!;
 }
