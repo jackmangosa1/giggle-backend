@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using ServiceManagementAPI.Dtos;
+using ServiceManagementAPI.Enums;
 using ServiceManagementAPI.Services.CustomerService;
 
 namespace ServiceManagementAPI.Controllers
@@ -16,7 +17,7 @@ namespace ServiceManagementAPI.Controllers
         }
 
         [HttpGet("profile/{customerId}")]
-        public async Task<IActionResult> GetCustomerProfile(int customerId)
+        public async Task<IActionResult> GetCustomerProfile(string customerId)
         {
             var customerProfile = await _userService.GetCustomerProfileAsync(customerId);
 
@@ -29,7 +30,7 @@ namespace ServiceManagementAPI.Controllers
         }
 
         [HttpPut("profile/{customerId}")]
-        public async Task<IActionResult> UpdateCustomerProfile(int customerId, [FromForm] UpdateCustomerProfileDto updateCustomerProfileDto, IFormFile? imageFile = null)
+        public async Task<IActionResult> UpdateCustomerProfile(string customerId, [FromForm] UpdateCustomerProfileDto updateCustomerProfileDto, IFormFile? imageFile = null)
         {
             if (!ModelState.IsValid)
             {
@@ -95,5 +96,42 @@ namespace ServiceManagementAPI.Controllers
 
             return Ok(notifications);
         }
+
+        [HttpPost("payments")]
+        public async Task<IActionResult> SavePaymentAsync([FromBody] SavePaymentDto savePaymentDto)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var paymentSaved = await _userService.ProcessPaymentAsync(savePaymentDto);
+
+            if (!paymentSaved)
+            {
+                return BadRequest(new { message = "Payment processing failed" });
+            }
+
+            return Ok(new { message = "Payment saved successfully" });
+        }
+
+        [HttpPut("bookings/{bookingId}/status")]
+        public async Task<IActionResult> UpdateBookingStatus(int bookingId, [FromBody] BookingStatus bookingStatus)
+        {
+            if (!Enum.IsDefined(typeof(BookingStatus), bookingStatus))
+            {
+                return BadRequest(new { message = "Invalid booking status" });
+            }
+
+            var result = await _userService.UpdateBookingStatusAsync(bookingId, bookingStatus);
+
+            if (!result)
+            {
+                return NotFound(new { message = "Booking not found or status update failed" });
+            }
+
+            return Ok(new { message = "Booking status updated successfully" });
+        }
+
     }
 }

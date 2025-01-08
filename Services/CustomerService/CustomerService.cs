@@ -1,4 +1,5 @@
 ﻿using ServiceManagementAPI.Dtos;
+using ServiceManagementAPI.Enums;
 using ServiceManagementAPI.Repositories.CustomerRepository;
 
 namespace ServiceManagementAPI.Services.CustomerService
@@ -11,12 +12,12 @@ namespace ServiceManagementAPI.Services.CustomerService
             _customerRepository = customerRepository;
         }
 
-        public async Task<CustomerProfileDto?> GetCustomerProfileAsync(int customerId)
+        public async Task<CustomerProfileDto?> GetCustomerProfileAsync(string customerId)
         {
             return await _customerRepository.GetCustomerProfileAsync(customerId);
         }
 
-        public async Task<bool> UpdateCustomerProfileAsync(int customerId, UpdateCustomerProfileDto updateCustomerProfileDto, Stream imageStream = null!)
+        public async Task<bool> UpdateCustomerProfileAsync(string customerId, UpdateCustomerProfileDto updateCustomerProfileDto, Stream imageStream = null!)
         {
             return await _customerRepository.UpdateCustomerProfileAsync(customerId, updateCustomerProfileDto, imageStream);
         }
@@ -30,10 +31,20 @@ namespace ServiceManagementAPI.Services.CustomerService
         {
             return await _customerRepository.SearchProvidersAsync(searchTerm);
         }
-
         public async Task<List<NotificationDto>> GetNotificationsByUserIdAsync(string userId)
         {
             return await _customerRepository.GetNotificationsByUserIdAsync(userId);
+        }
+
+
+        public async Task<bool> ProcessPaymentAsync(SavePaymentDto savePaymentDto)
+        {
+            return await _customerRepository.ProcessPaymentAsync(savePaymentDto);
+        }
+
+        public async Task<bool> UpdateBookingStatusAsync(int bookingId, BookingStatus status)
+        {
+            return await _customerRepository.UpdateBookingStatusAsync(bookingId, status);
         }
     }
 }

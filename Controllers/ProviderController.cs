@@ -175,6 +175,19 @@ namespace ServiceManagementAPI.Controllers
             return Ok(bookings);
         }
 
+        [HttpGet("notifications/{userId}")]
+        public async Task<IActionResult> GetNotificationsByUserId(string userId)
+        {
+            var notifications = await _providerService.GetNotificationsByProviderIdAsync(userId);
+
+            if (notifications == null || !notifications.Any())
+            {
+                return NotFound(new { message = "No notifications found" });
+            }
+
+            return Ok(notifications);
+        }
+
 
     }
 }

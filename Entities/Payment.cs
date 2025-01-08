@@ -17,9 +17,7 @@ public partial class Payment
 
     public decimal PaymentAmount { get; set; }
 
-    public string Currency { get; set; } = null!;
-
-    public string? PaymentMethod { get; set; }
+    public int PaymentMethod { get; set; }
 
     public DateTime? PaymentDate { get; set; }
 

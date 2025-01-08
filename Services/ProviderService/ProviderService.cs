@@ -63,5 +63,9 @@ namespace ServiceManagementAPI.Services.ProviderService
             return await _providerRepository.GetAllBookingsAsync(providerId);
         }
 
+        public async Task<List<NotificationDto>> GetNotificationsByProviderIdAsync(string userId)
+        {
+            return await _providerRepository.GetNotificationsByProviderIdAsync(userId);
+        }
     }
 }

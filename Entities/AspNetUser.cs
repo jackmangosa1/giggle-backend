@@ -41,7 +41,7 @@ public partial class AspNetUser
 
     public virtual ICollection<AspNetUserToken> AspNetUserTokens { get; set; } = new List<AspNetUserToken>();
 
-    public virtual ICollection<Customer> Customers { get; set; } = new List<Customer>();
+    public virtual Customer? Customer { get; set; }
 
     public virtual ICollection<Message> MessageReceivers { get; set; } = new List<Message>();
 

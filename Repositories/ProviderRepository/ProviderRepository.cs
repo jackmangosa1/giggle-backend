@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
-using ServiceManagementAPI.Data;
 using ServiceManagementAPI.Dtos;
 using ServiceManagementAPI.Entities;
 using ServiceManagementAPI.Enums;
@@ -299,9 +298,9 @@ namespace ServiceManagementAPI.Repositories.ProviderRepository
                 IsRead = false,
                 CreatedAt = DateTime.UtcNow,
                 BookingId = bookingId,
-                // CustomerName = booking.Customer.FullName,
+                CustomerName = booking.Customer.FullName,
                 Email = booking.Customer.User.Email,
-                // PhoneNumber = booking.Customer.PhoneNumber
+                PhoneNumber = booking.Customer.PhoneNumber
             };
             _context.Notifications.Add(notification);
 
@@ -389,6 +388,31 @@ namespace ServiceManagementAPI.Repositories.ProviderRepository
 
             return bookings;
         }
+
+        public async Task<List<NotificationDto>> GetNotificationsByProviderIdAsync(string userId)
+        {
+            var notifications = await _context.Notifications
+        .Where(n => n.UserId == userId)
+        .OrderByDescending(n => n.CreatedAt)
+        .Select(n => new NotificationDto
+        {
+            Id = n.Id,
+            Type = (NotificationTypes)n.Type,
+            Date = n.CreatedAt.ToString("yyyy-MM-ddTHH:mm:ss.sssZ"),
+            BookingStatus = n.BookingStatus,
+            Status = n.IsRead ? "read" : "notRead",
+            BookingId = n.BookingId,
+            CustomerName = n.Booking != null ? n.Booking.Customer.FullName : null,
+            Email = n.Booking != null ? n.Booking.Customer.User.Email : null,
+            PhoneNumber = n.Booking != null ? n.Booking.Customer.PhoneNumber : null,
+            Amount = n.Booking != null ? n.Booking.Service.Price : null,
+            PaymentStatus = n.Booking != null ? n.Booking.PaymentStatus : null,
+        })
+        .ToListAsync();
+
+            return notifications;
+        }
+
 
     }
 }

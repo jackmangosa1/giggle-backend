@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using ServiceManagementAPI.Entities;
 
 namespace ServiceManagementAPI.Data;
@@ -211,10 +209,6 @@ public partial class ServiceManagementDbContext : DbContext
                 .HasMaxLength(450)
                 .HasColumnName("userId");
 
-            entity.HasOne(d => d.User).WithMany(p => p.Customers)
-                .HasForeignKey(d => d.UserId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__Customers__userI__4AB81AF0");
         });
 
         modelBuilder.Entity<Message>(entity =>
@@ -271,10 +265,6 @@ public partial class ServiceManagementDbContext : DbContext
 
             entity.Property(e => e.PaymentId).HasColumnName("paymentId");
             entity.Property(e => e.BookingId).HasColumnName("bookingId");
-            entity.Property(e => e.Currency)
-                .HasMaxLength(10)
-                .IsUnicode(false)
-                .HasColumnName("currency");
             entity.Property(e => e.CustomerId).HasColumnName("customerId");
             entity.Property(e => e.EscrowAmount)
                 .HasColumnType("decimal(10, 2)")
@@ -299,15 +289,6 @@ public partial class ServiceManagementDbContext : DbContext
                 .IsUnicode(false)
                 .HasColumnName("transactionId");
 
-            entity.HasOne(d => d.Booking).WithMany(p => p.Payments)
-                .HasForeignKey(d => d.BookingId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__Payments__bookin__73BA3083");
-
-            entity.HasOne(d => d.Customer).WithMany(p => p.Payments)
-                .HasForeignKey(d => d.CustomerId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__Payments__custom__74AE54BC");
         });
 
         modelBuilder.Entity<Provider>(entity =>
