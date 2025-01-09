@@ -13,14 +13,18 @@ namespace ServiceManagementAPI.Repositories.CustomerRepository
         private readonly ServiceManagementDbContext _context;
         private readonly BlobStorageUtil _blobStorageUtil;
         private readonly IHubContext<NotificationHub> _hubContext;
+        private readonly ILogger<CustomerRepository> _logger;
+        private readonly IConfiguration _configuration;
 
 
 
-        public CustomerRepository(ServiceManagementDbContext context, BlobStorageUtil blobStorageUtil, IHubContext<NotificationHub> hubContext)
+        public CustomerRepository(ServiceManagementDbContext context, BlobStorageUtil blobStorageUtil, IHubContext<NotificationHub> hubContext, ILogger<CustomerRepository> logger, IConfiguration configuration)
         {
             _context = context;
             _blobStorageUtil = blobStorageUtil;
             _hubContext = hubContext;
+            _logger = logger;
+            _configuration = configuration;
         }
 
         public async Task<CustomerProfileDto?> GetCustomerProfileAsync(string customerId)
@@ -276,6 +280,7 @@ namespace ServiceManagementAPI.Repositories.CustomerRepository
                 .Include(b => b.Customer)
                     .ThenInclude(c => c.User)
                 .Include(b => b.Service)
+                    .ThenInclude(s => s.Provider)
                 .FirstOrDefaultAsync(b => b.Id == bookingId);
 
             if (booking == null)
@@ -306,11 +311,112 @@ namespace ServiceManagementAPI.Repositories.CustomerRepository
 
             await _context.SaveChangesAsync();
 
+            var transferSuccess = await TransferMoneyToProviderAsync(booking);
+
+            if (!transferSuccess)
+            {
+                return false;
+            }
+
+
             string notificationMessage = $"Service completion for the booking {booking.Service.Name} has been confirmed.";
 
             await _hubContext.Clients.All.SendAsync("ReceiveNotification", notificationMessage);
 
             return true;
+        }
+
+
+
+        private async Task<bool> TransferMoneyToProviderAsync(Booking booking)
+        {
+            _logger.LogInformation("Initiating transfer for Booking ID: {BookingId}", booking.Id);
+
+            using (var httpClient = new HttpClient())
+            {
+                var flutterwaveBaseUrl = "https://api.flutterwave.com/v3";
+
+                // Retrieve the secret key from configuration
+                var secretKey = _configuration["Flutterwave:SecretKey"];
+                if (string.IsNullOrEmpty(secretKey))
+                {
+                    _logger.LogError("Flutterwave secret key is missing in the configuration.");
+                    return false;
+                }
+
+                var providerPhoneNumber = booking.Service.Provider.PhoneNumber;
+                var providerAmount = booking.Service.Price;
+
+                var requestBody = new
+                {
+                    account_bank = "MPS",
+                    account_number = providerPhoneNumber,
+                    amount = providerAmount,
+                    currency = "RWF",
+                    narration = $"Payment for booking {booking.Id}",
+                    reference = Guid.NewGuid().ToString()
+                };
+
+                httpClient.DefaultRequestHeaders.Authorization =
+                    new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", secretKey);
+
+                try
+                {
+                    var response = await httpClient.PostAsJsonAsync($"{flutterwaveBaseUrl}/transfers", requestBody);
+                    var responseData = await response.Content.ReadAsStringAsync();
+
+                    if (response.IsSuccessStatusCode)
+                    {
+                        _logger.LogInformation("Transfer successful for Booking ID: {BookingId}. Response: {Response}", booking.Id, responseData);
+
+                        // Fetch the payment record
+                        var payment = await _context.Payments.FirstOrDefaultAsync(p => p.BookingId == booking.Id);
+
+                        if (payment == null)
+                        {
+                            _logger.LogWarning("Payment record not found for Booking ID: {BookingId}", booking.Id);
+                            return false;
+                        }
+
+                        payment.PaymentStatus = (int)PaymentStatus.Released;
+                        payment.ReleasedAmount = payment.EscrowAmount ?? 0;
+                        payment.EscrowAmount = 0;
+
+                        _context.Payments.Update(payment);
+                        await _context.SaveChangesAsync();
+
+
+                        var notification = new Notification
+                        {
+                            UserId = booking.Service.Provider.UserId,
+                            Type = (int)NotificationTypes.PaymentStatusChange,
+                            BookingStatus = (int)BookingStatus.Confirmed,
+                            IsRead = false,
+                            CreatedAt = DateTime.UtcNow,
+                            BookingId = booking.Id,
+                            CustomerName = booking.Customer.FullName,
+                            Email = booking.Customer.User.Email,
+                            PhoneNumber = booking.Customer.PhoneNumber,
+                        };
+
+                        _context.Notifications.Add(notification);
+                        await _context.SaveChangesAsync();
+
+                        await _hubContext.Clients.All.SendAsync("ReceiveNotification", "Payment for Booking ID {booking.Id} has been released.");
+                        return true;
+                    }
+                    else
+                    {
+                        _logger.LogWarning("Transfer failed for Booking ID: {BookingId}. Response: {Response}", booking.Id, responseData);
+                        return false;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "An error occurred while processing the transfer for Booking ID: {BookingId}", booking.Id);
+                    return false;
+                }
+            }
         }
     }
 }
