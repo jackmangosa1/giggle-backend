@@ -413,6 +413,101 @@ namespace ServiceManagementAPI.Repositories.ProviderRepository
             return notifications;
         }
 
+        public async Task<ProviderStatisticsDto> GetProviderStatisticsAsync(string providerId)
+        {
+            // Fetch the provider's services and related bookings
+            var services = await _context.Services
+                .Include(s => s.Bookings)
+                .ThenInclude(b => b.Payments)
+                .Where(s => s.Provider.User.Id == providerId)
+                .ToListAsync();
+
+            if (!services.Any())
+            {
+                // If no services exist for the provider, return empty stats
+                return new ProviderStatisticsDto
+                {
+                    TotalRevenue = 0,
+                    TotalBookings = 0,
+                    RevenueGrowthPercentage = 0,
+                    RevenueData = new List<RevenueData>() // Add empty monthly data
+                };
+            }
+
+            // Calculate total revenue from ReleasedAmount in payments for completed bookings
+            var totalRevenue = services
+                .SelectMany(s => s.Bookings)
+                .Where(b => b.BookingStatus == (int)BookingStatus.Confirmed)
+                .Sum(b => b.Payments.Sum(p => p.ReleasedAmount ?? 0));
+
+            // Calculate total bookings
+            var totalBookings = services
+                .SelectMany(s => s.Bookings)
+                .Count();
+
+            // Calculate previous revenue (1 month ago)
+            var previousRevenue = services
+                .SelectMany(s => s.Bookings)
+                .Where(b => b.BookingStatus == (int)BookingStatus.Completed &&
+                            b.CreatedAt.HasValue &&
+                            b.CreatedAt.Value < DateTime.UtcNow.AddMonths(-1))
+                .Sum(b => b.Payments.Sum(p => p.ReleasedAmount ?? 0));
+
+            // Calculate revenue growth percentage
+            var revenueGrowthPercentage = previousRevenue == 0
+                ? 0
+                : ((totalRevenue - previousRevenue) / previousRevenue) * 100;
+
+            // Generate monthly data for the last 6 months
+            var monthlyData = GetMonthlyRevenueData(services);
+
+            // Create and return the statistics DTO
+            return new ProviderStatisticsDto
+            {
+                TotalRevenue = totalRevenue,
+                TotalBookings = totalBookings,
+                RevenueGrowthPercentage = Math.Round((double)revenueGrowthPercentage, 2),
+                RevenueData = monthlyData
+            };
+        }
+
+        private List<RevenueData> GetMonthlyRevenueData(List<Service> services)
+        {
+            var months = new List<RevenueData>();
+            for (int i = 5; i >= 0; i--)
+            {
+                var monthStart = DateTime.UtcNow.AddMonths(-i).ToString("yyyy-MM");
+                var monthEnd = DateTime.UtcNow.AddMonths(-i + 1).ToString("yyyy-MM");
+
+                var monthRevenue = services
+                    .SelectMany(s => s.Bookings)
+                    .Where(b => b.BookingStatus == (int)BookingStatus.Confirmed &&
+                                b.CreatedAt.HasValue &&
+                                b.CreatedAt.Value >= DateTime.Parse(monthStart) &&
+                                b.CreatedAt.Value < DateTime.Parse(monthEnd))
+                    .Sum(b => b.Payments.Sum(p => p.ReleasedAmount ?? 0));
+
+                var monthBookings = services
+                    .SelectMany(s => s.Bookings)
+                    .Count(b => b.BookingStatus == (int)BookingStatus.Confirmed &&
+                                b.CreatedAt.HasValue &&
+                                b.CreatedAt.Value >= DateTime.Parse(monthStart) &&
+                                b.CreatedAt.Value < DateTime.Parse(monthEnd));
+
+                months.Add(new RevenueData
+                {
+                    Date = monthStart,
+                    Revenue = monthRevenue,
+                    Bookings = monthBookings
+                });
+            }
+
+            return months;
+        }
+
+
+
+
 
     }
 }

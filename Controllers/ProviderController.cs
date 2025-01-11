@@ -188,6 +188,19 @@ namespace ServiceManagementAPI.Controllers
             return Ok(notifications);
         }
 
+        [HttpGet("{providerId}/statistics")]
+        public async Task<IActionResult> GetProviderStatistics(string providerId)
+        {
+            var providerStatistics = await _providerService.GetProviderStatisticsAsync(providerId);
+
+            if (providerStatistics == null)
+            {
+                return NotFound(new { message = "Provider statistics not found" });
+            }
+
+            return Ok(providerStatistics);
+        }
+
 
     }
 }

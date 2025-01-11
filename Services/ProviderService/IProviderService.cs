@@ -15,7 +15,7 @@ namespace ServiceManagementAPI.Services.ProviderService
         Task<List<ServiceCategoryDto>> GetServiceCategoriesAsync();
         Task<List<SkillDto>> GetSkillsAsync();
         Task<List<BookingDetailsDto>> GetAllBookingsAsync(string providerId);
-
         Task<List<NotificationDto>> GetNotificationsByProviderIdAsync(string userId);
+        Task<ProviderStatisticsDto> GetProviderStatisticsAsync(string providerId);
     }
 }
