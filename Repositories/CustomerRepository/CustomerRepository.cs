@@ -336,7 +336,6 @@ namespace ServiceManagementAPI.Repositories.CustomerRepository
             {
                 var flutterwaveBaseUrl = "https://api.flutterwave.com/v3";
 
-                // Retrieve the secret key from configuration
                 var secretKey = _configuration["Flutterwave:SecretKey"];
                 if (string.IsNullOrEmpty(secretKey))
                 {
@@ -346,6 +345,7 @@ namespace ServiceManagementAPI.Repositories.CustomerRepository
 
                 var providerPhoneNumber = booking.Service.Provider.PhoneNumber;
                 var providerAmount = booking.Service.Price;
+                var providerName = booking.Service.Provider.DisplayName;
 
                 var requestBody = new
                 {
@@ -354,7 +354,8 @@ namespace ServiceManagementAPI.Repositories.CustomerRepository
                     amount = providerAmount,
                     currency = "RWF",
                     narration = $"Payment for booking {booking.Id}",
-                    reference = Guid.NewGuid().ToString()
+                    reference = Guid.NewGuid().ToString(),
+                    beneficiary_name = providerName,
                 };
 
                 httpClient.DefaultRequestHeaders.Authorization =
@@ -369,7 +370,6 @@ namespace ServiceManagementAPI.Repositories.CustomerRepository
                     {
                         _logger.LogInformation("Transfer successful for Booking ID: {BookingId}. Response: {Response}", booking.Id, responseData);
 
-                        // Fetch the payment record
                         var payment = await _context.Payments.FirstOrDefaultAsync(p => p.BookingId == booking.Id);
 
                         if (payment == null)
@@ -377,7 +377,7 @@ namespace ServiceManagementAPI.Repositories.CustomerRepository
                             _logger.LogWarning("Payment record not found for Booking ID: {BookingId}", booking.Id);
                             return false;
                         }
-
+                        booking.PaymentStatus = (int)PaymentStatus.Released;
                         payment.PaymentStatus = (int)PaymentStatus.Released;
                         payment.ReleasedAmount = payment.EscrowAmount ?? 0;
                         payment.EscrowAmount = 0;

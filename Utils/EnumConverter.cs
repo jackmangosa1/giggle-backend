@@ -8,7 +8,7 @@
             {
                 0 => "Pending",
                 1 => "Completed",
-                2 => "Failed",
+                2 => "Released",
                 _ => "Unknown"
             };
         }
