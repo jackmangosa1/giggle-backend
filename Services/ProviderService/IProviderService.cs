@@ -17,5 +17,11 @@ namespace ServiceManagementAPI.Services.ProviderService
         Task<List<BookingDetailsDto>> GetAllBookingsAsync(string providerId);
         Task<List<NotificationDto>> GetNotificationsByProviderIdAsync(string userId);
         Task<ProviderStatisticsDto> GetProviderStatisticsAsync(string providerId);
+        Task<bool> AddCompletedServiceAsync(CreateCompletedServiceDto createCompletedServiceDto, Stream? imageStream = null);
+        Task<List<CompletedServiceDto>> GetAllCompletedServicesAsync(string providerId);
+        Task<bool> UpdateCompletedServiceAsync(int completedServiceId, CompletedServiceDto editCompletedServiceDto, Stream? newImageStream = null);
+        Task<bool> DeleteCompletedServiceAsync(int completedServiceId);
+        Task<CompletedServiceDto?> GetCompletedServiceByIdAsync(int completedServiceId);
+
     }
 }

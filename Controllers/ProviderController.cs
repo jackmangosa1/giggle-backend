@@ -201,6 +201,90 @@ namespace ServiceManagementAPI.Controllers
             return Ok(providerStatistics);
         }
 
+        [HttpPost("completed-services")]
+        public async Task<IActionResult> AddCompletedService([FromForm] CreateCompletedServiceDto dto, IFormFile? image)
+        {
+            Stream? imageStream = null;
+            if (image != null && image.Length > 0)
+            {
+                imageStream = image.OpenReadStream();
+            }
 
+            var result = await _providerService.AddCompletedServiceAsync(dto, imageStream);
+
+            if (imageStream != null)
+            {
+                await imageStream.DisposeAsync();
+            }
+
+            if (!result)
+            {
+                return NotFound("Booking not found");
+            }
+            return Ok();
+        }
+
+        [HttpGet("completed-services/{providerId}")]
+        public async Task<IActionResult> GetAllCompletedServices(string providerId)
+        {
+            var completedServices = await _providerService.GetAllCompletedServicesAsync(providerId);
+
+            if (completedServices == null || !completedServices.Any())
+            {
+                return NotFound(new { message = "No completed services found" });
+            }
+
+            return Ok(completedServices);
+        }
+
+        [HttpPut("completed-services/{completedServiceId}")]
+        public async Task<IActionResult> UpdateCompletedService(int completedServiceId, [FromForm] CompletedServiceDto editCompletedServiceDto, IFormFile? imageFile = null)
+        {
+            Stream? imageStream = null;
+            if (imageFile != null)
+            {
+                imageStream = imageFile.OpenReadStream();
+            }
+
+            var result = await _providerService.UpdateCompletedServiceAsync(completedServiceId, editCompletedServiceDto, imageStream);
+
+            if (!result)
+            {
+                return NotFound(new { message = "Completed service not found" });
+            }
+
+            if (imageStream != null)
+            {
+                await imageStream.DisposeAsync();
+            }
+
+            return Ok(new { message = "Completed service updated successfully" });
+        }
+
+        [HttpDelete("completed-services/{completedServiceId}")]
+        public async Task<IActionResult> DeleteCompletedService(int completedServiceId)
+        {
+            var result = await _providerService.DeleteCompletedServiceAsync(completedServiceId);
+
+            if (!result)
+            {
+                return NotFound(new { message = "Completed service not found" });
+            }
+
+            return Ok(new { message = "Completed service deleted successfully" });
+        }
+
+        [HttpGet("completed-service/{id}")]
+        public async Task<IActionResult> GetCompletedServiceById(int id)
+        {
+            var completedService = await _providerService.GetCompletedServiceByIdAsync(id);
+
+            if (completedService == null)
+            {
+                return NotFound(new { Message = "Completed service not found." });
+            }
+
+            return Ok(completedService);
+        }
     }
 }

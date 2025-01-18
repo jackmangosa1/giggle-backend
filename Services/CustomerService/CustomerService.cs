@@ -1,4 +1,5 @@
 ﻿using ServiceManagementAPI.Dtos;
+using ServiceManagementAPI.Entities;
 using ServiceManagementAPI.Enums;
 using ServiceManagementAPI.Repositories.CustomerRepository;
 
@@ -36,7 +37,6 @@ namespace ServiceManagementAPI.Services.CustomerService
             return await _customerRepository.GetNotificationsByUserIdAsync(userId);
         }
 
-
         public async Task<bool> ProcessPaymentAsync(SavePaymentDto savePaymentDto)
         {
             return await _customerRepository.ProcessPaymentAsync(savePaymentDto);
@@ -45,6 +45,25 @@ namespace ServiceManagementAPI.Services.CustomerService
         public async Task<bool> UpdateBookingStatusAsync(int bookingId, BookingStatus status)
         {
             return await _customerRepository.UpdateBookingStatusAsync(bookingId, status);
+        }
+
+        public async Task<Review> CreateReviewAsync(string userId, int completedServiceId, int rating, string? comment)
+        {
+            return await _customerRepository.CreateReviewAsync(userId, completedServiceId, rating, comment);
+        }
+
+        public async Task<Review?> GetReviewByIdAsync(int reviewId)
+        {
+            return await _customerRepository.GetReviewByIdAsync(reviewId);
+        }
+
+        public async Task<bool> UpdateReviewAsync(int reviewId, int? rating = null, string? comment = null)
+        {
+            return await _customerRepository.UpdateReviewAsync(reviewId, rating, comment);
+        }
+        public async Task<bool> DeleteReviewAsync(int reviewId)
+        {
+            return await _customerRepository.DeleteReviewAsync(reviewId);
         }
     }
 }

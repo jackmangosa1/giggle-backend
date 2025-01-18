@@ -133,5 +133,82 @@ namespace ServiceManagementAPI.Controllers
             return Ok(new { message = "Booking status updated successfully" });
         }
 
+        [HttpGet("reviews/{reviewId}")]
+        public async Task<IActionResult> GetReviewById(int reviewId)
+        {
+            var review = await _userService.GetReviewByIdAsync(reviewId);
+
+            if (review == null)
+            {
+                return NotFound(new { message = "Review not found" });
+            }
+
+            return Ok(review);
+        }
+
+        [HttpPost("reviews")]
+        public async Task<IActionResult> CreateReview([FromBody] CreateReviewDto createReviewDto)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var review = await _userService.CreateReviewAsync(
+                createReviewDto.UserId,
+                createReviewDto.CompletedServiceId,
+                createReviewDto.Rating,
+                createReviewDto.Comment
+            );
+
+            var responseDto = new
+            {
+                Id = review.Id,
+                UserId = review.UserId,
+                CompletedServiceId = review.CompletedServiceId,
+                Rating = review.Rating,
+                Comment = review.Comment,
+                CreatedAt = review.CreatedAt,
+                CompletedService = new
+                {
+                    Id = review.CompletedService.Id,
+                    Description = review.CompletedService.Description,
+                    CompletedAt = review.CompletedService.CompletedAt
+                }
+            };
+
+            return CreatedAtAction(nameof(GetReviewById), new { reviewId = review.Id }, responseDto);
+        }
+
+        [HttpPut("reviews/{reviewId}")]
+        public async Task<IActionResult> UpdateReview(int reviewId, [FromBody] UpdateReviewDto updateReviewDto)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var result = await _userService.UpdateReviewAsync(reviewId, updateReviewDto.Rating, updateReviewDto.Comment);
+
+            if (!result)
+            {
+                return NotFound(new { message = "Review not found or update failed" });
+            }
+
+            return Ok(new { message = "Review updated successfully" });
+        }
+
+        [HttpDelete("reviews/{reviewId}")]
+        public async Task<IActionResult> DeleteReview(int reviewId)
+        {
+            var result = await _userService.DeleteReviewAsync(reviewId);
+
+            if (!result)
+            {
+                return NotFound(new { message = "Review not found" });
+            }
+
+            return Ok(new { message = "Review deleted successfully" });
+        }
     }
 }

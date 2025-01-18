@@ -72,5 +72,29 @@ namespace ServiceManagementAPI.Services.ProviderService
         {
             return await _providerRepository.GetProviderStatisticsAsync(providerId);
         }
+
+        public async Task<bool> AddCompletedServiceAsync(CreateCompletedServiceDto createCompletedServiceDto, Stream? imageStream = null)
+        {
+            return await _providerRepository.AddCompletedServiceAsync(createCompletedServiceDto, imageStream);
+        }
+
+        public async Task<List<CompletedServiceDto>> GetAllCompletedServicesAsync(string providerId)
+        {
+            return await _providerRepository.GetAllCompletedServicesAsync(providerId);
+        }
+
+        public async Task<bool> UpdateCompletedServiceAsync(int completedServiceId, CompletedServiceDto editCompletedServiceDto, Stream? newImageStream = null)
+        {
+            return await _providerRepository.UpdateCompletedServiceAsync(completedServiceId, editCompletedServiceDto, newImageStream);
+        }
+        public async Task<bool> DeleteCompletedServiceAsync(int completedServiceId)
+        {
+            return await _providerRepository.DeleteCompletedServiceAsync(completedServiceId);
+        }
+
+        public async Task<CompletedServiceDto?> GetCompletedServiceByIdAsync(int completedServiceId)
+        {
+            return await _providerRepository.GetCompletedServiceByIdAsync(completedServiceId);
+        }
     }
 }

@@ -30,10 +30,15 @@ namespace ServiceManagementAPI.Repositories.ProviderRepository
                 .Include(p => p.Services)
                     .ThenInclude(s => s.Category)
                 .Include(p => p.Services)
+                     .ThenInclude(s => s.Bookings)
+                    .ThenInclude(b => b.Customer)
+                    .ThenInclude(c => c.User)
+                .Include(p => p.Services)
                     .ThenInclude(s => s.Bookings)
-                        .ThenInclude(b => b.CompletedServices)
-                            .ThenInclude(cs => cs.Reviews)
+                    .ThenInclude(b => b.CompletedServices)
+                    .ThenInclude(cs => cs.Reviews)
                 .FirstOrDefaultAsync(p => p.User.Id == providerId);
+
 
             if (provider == null)
             {
@@ -61,6 +66,7 @@ namespace ServiceManagementAPI.Repositories.ProviderRepository
                     Id = completedService.Id,
                     Description = completedService.Description,
                     MediaUrl = completedService.MediaUrl,
+                    UserId = completedService.Booking.Customer.User.Id,
                     CompletedAt = completedService.CompletedAt,
                     Reviews = completedService.Reviews.Select(review => new ReviewDto
                     {
@@ -415,7 +421,6 @@ namespace ServiceManagementAPI.Repositories.ProviderRepository
 
         public async Task<ProviderStatisticsDto> GetProviderStatisticsAsync(string providerId)
         {
-            // Fetch the provider's services and related bookings
             var services = await _context.Services
                 .Include(s => s.Bookings)
                 .ThenInclude(b => b.Payments)
@@ -424,28 +429,24 @@ namespace ServiceManagementAPI.Repositories.ProviderRepository
 
             if (!services.Any())
             {
-                // If no services exist for the provider, return empty stats
                 return new ProviderStatisticsDto
                 {
                     TotalRevenue = 0,
                     TotalBookings = 0,
                     RevenueGrowthPercentage = 0,
-                    RevenueData = new List<RevenueData>() // Add empty monthly data
+                    RevenueData = new List<Dtos.RevenueData>()
                 };
             }
 
-            // Calculate total revenue from ReleasedAmount in payments for completed bookings
             var totalRevenue = services
                 .SelectMany(s => s.Bookings)
                 .Where(b => b.BookingStatus == (int)BookingStatus.Confirmed)
                 .Sum(b => b.Payments.Sum(p => p.ReleasedAmount ?? 0));
 
-            // Calculate total bookings
             var totalBookings = services
                 .SelectMany(s => s.Bookings)
                 .Count();
 
-            // Calculate previous revenue (1 month ago)
             var previousRevenue = services
                 .SelectMany(s => s.Bookings)
                 .Where(b => b.BookingStatus == (int)BookingStatus.Completed &&
@@ -453,15 +454,12 @@ namespace ServiceManagementAPI.Repositories.ProviderRepository
                             b.CreatedAt.Value < DateTime.UtcNow.AddMonths(-1))
                 .Sum(b => b.Payments.Sum(p => p.ReleasedAmount ?? 0));
 
-            // Calculate revenue growth percentage
             var revenueGrowthPercentage = previousRevenue == 0
                 ? 0
                 : ((totalRevenue - previousRevenue) / previousRevenue) * 100;
 
-            // Generate monthly data for the last 6 months
-            var monthlyData = GetMonthlyRevenueData(services);
+            var monthlyData = RevenueDataUtil.GetMonthlyRevenueData(services);
 
-            // Create and return the statistics DTO
             return new ProviderStatisticsDto
             {
                 TotalRevenue = totalRevenue,
@@ -471,43 +469,150 @@ namespace ServiceManagementAPI.Repositories.ProviderRepository
             };
         }
 
-        private List<RevenueData> GetMonthlyRevenueData(List<Service> services)
+        public async Task<bool> AddCompletedServiceAsync(CreateCompletedServiceDto createCompletedServiceDto, Stream? imageStream = null)
         {
-            var months = new List<RevenueData>();
-            for (int i = 5; i >= 0; i--)
+            var booking = await _context.Bookings
+                .Include(b => b.CompletedServices)
+                .FirstOrDefaultAsync(b => b.Id == createCompletedServiceDto.BookingId);
+
+            if (booking == null)
             {
-                var monthStart = DateTime.UtcNow.AddMonths(-i).ToString("yyyy-MM");
-                var monthEnd = DateTime.UtcNow.AddMonths(-i + 1).ToString("yyyy-MM");
-
-                var monthRevenue = services
-                    .SelectMany(s => s.Bookings)
-                    .Where(b => b.BookingStatus == (int)BookingStatus.Confirmed &&
-                                b.CreatedAt.HasValue &&
-                                b.CreatedAt.Value >= DateTime.Parse(monthStart) &&
-                                b.CreatedAt.Value < DateTime.Parse(monthEnd))
-                    .Sum(b => b.Payments.Sum(p => p.ReleasedAmount ?? 0));
-
-                var monthBookings = services
-                    .SelectMany(s => s.Bookings)
-                    .Count(b => b.BookingStatus == (int)BookingStatus.Confirmed &&
-                                b.CreatedAt.HasValue &&
-                                b.CreatedAt.Value >= DateTime.Parse(monthStart) &&
-                                b.CreatedAt.Value < DateTime.Parse(monthEnd));
-
-                months.Add(new RevenueData
-                {
-                    Date = monthStart,
-                    Revenue = monthRevenue,
-                    Bookings = monthBookings
-                });
+                return false;
             }
 
-            return months;
+            string? mediaUrl = null;
+            if (imageStream != null)
+            {
+                var containerName = "completed-service-images";
+                var uniqueFileName = Guid.NewGuid().ToString();
+                mediaUrl = await _blobStorageUtil.UploadImageToBlobAsync(imageStream, uniqueFileName, containerName);
+            }
+
+            var completedService = new CompletedService
+            {
+                BookingId = booking.Id,
+                Description = createCompletedServiceDto.Description,
+                MediaUrl = mediaUrl,
+                CompletedAt = DateTime.UtcNow
+            };
+
+            booking.CompletedServices.Add(completedService);
+            _context.Bookings.Update(booking);
+            await _context.SaveChangesAsync();
+
+            return true;
         }
 
+        public async Task<List<CompletedServiceDto>> GetAllCompletedServicesAsync(string providerId)
+        {
+            var completedServices = await _context.CompletedServices
+                .Include(cs => cs.Reviews)
+                .Where(cs => cs.Booking.Service.Provider.User.Id == providerId)
+                .Select(cs => new CompletedServiceDto
+                {
+                    Id = cs.Id,
+                    Description = cs.Description,
+                    MediaUrl = cs.MediaUrl,
+                    UserId = cs.Booking.Customer.User.Id,
+                    CompletedAt = cs.CompletedAt,
+                    Reviews = cs.Reviews.Select(review => new ReviewDto
+                    {
+                        Id = review.Id,
+                        UserId = review.UserId,
+                        Rating = review.Rating,
+                        Comment = review.Comment,
+                        CreatedAt = review.CreatedAt,
+                        UserName = review.User.UserName!
+                    }).ToList()
+                })
+                .ToListAsync();
 
+            return completedServices;
+        }
 
+        public async Task<bool> UpdateCompletedServiceAsync(int completedServiceId, CompletedServiceDto editCompletedServiceDto, Stream? newImageStream = null)
+        {
+            var completedService = await _context.CompletedServices
+                .Include(cs => cs.Booking)
+                .FirstOrDefaultAsync(cs => cs.Id == completedServiceId);
 
+            if (completedService == null)
+            {
+                return false;
+            }
 
+            completedService.Description = editCompletedServiceDto.Description;
+
+            if (newImageStream != null)
+            {
+                if (!string.IsNullOrEmpty(completedService.MediaUrl))
+                {
+                    var oldImageFileName = completedService.MediaUrl.Split('/').Last();
+                    await _blobStorageUtil.DeleteImageFromBlobAsync(oldImageFileName, "completed-service-images");
+                }
+                var containerName = "completed-service-images";
+                var uniqueFileName = Guid.NewGuid().ToString();
+                completedService.MediaUrl = await _blobStorageUtil.UploadImageToBlobAsync(newImageStream, uniqueFileName, containerName);
+            }
+
+            _context.CompletedServices.Update(completedService);
+            await _context.SaveChangesAsync();
+
+            return true;
+        }
+
+        public async Task<bool> DeleteCompletedServiceAsync(int completedServiceId)
+        {
+            var completedService = await _context.CompletedServices
+                .FirstOrDefaultAsync(cs => cs.Id == completedServiceId);
+
+            if (completedService == null)
+            {
+                return false;
+            }
+
+            if (!string.IsNullOrEmpty(completedService.MediaUrl))
+            {
+                var imageFileName = completedService.MediaUrl.Split('/').Last();
+                await _blobStorageUtil.DeleteImageFromBlobAsync(imageFileName, "completed-service-images");
+            }
+
+            _context.CompletedServices.Remove(completedService);
+            await _context.SaveChangesAsync();
+
+            return true;
+        }
+
+        public async Task<CompletedServiceDto?> GetCompletedServiceByIdAsync(int completedServiceId)
+        {
+            var completedService = await _context.CompletedServices
+                .Include(cs => cs.Booking)
+                    .ThenInclude(b => b.Service)
+                .Include(cs => cs.Reviews)
+                    .ThenInclude(r => r.User)
+                .FirstOrDefaultAsync(cs => cs.Id == completedServiceId);
+
+            if (completedService == null)
+            {
+                return null;
+            }
+
+            return new CompletedServiceDto
+            {
+                Id = completedService.Id,
+                Description = completedService.Description,
+                MediaUrl = completedService.MediaUrl,
+                CompletedAt = completedService.CompletedAt,
+                Reviews = completedService.Reviews.Select(review => new ReviewDto
+                {
+                    Id = review.Id,
+                    UserId = review.UserId,
+                    Rating = review.Rating,
+                    Comment = review.Comment,
+                    CreatedAt = review.CreatedAt,
+                    UserName = review.User.UserName!
+                }).ToList()
+            };
+        }
     }
 }

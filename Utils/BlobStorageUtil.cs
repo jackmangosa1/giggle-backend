@@ -22,5 +22,14 @@ namespace ServiceManagementAPI.Utils
 
             return blobClient.Uri.ToString();
         }
+
+        public async Task DeleteImageFromBlobAsync(string fileName, string containerName)
+        {
+            var blobClient = _blobServiceClient.GetBlobContainerClient(containerName);
+            var blob = blobClient.GetBlobClient(fileName);
+
+            await blob.DeleteIfExistsAsync();
+        }
+
     }
 }

@@ -418,5 +418,75 @@ namespace ServiceManagementAPI.Repositories.CustomerRepository
                 }
             }
         }
+
+        public async Task<Review> CreateReviewAsync(string userId, int completedServiceId, int rating, string? comment)
+        {
+            var completedService = await _context.CompletedServices.FirstOrDefaultAsync(cs => cs.Id == completedServiceId);
+            if (completedService == null)
+            {
+                throw new ArgumentException($"No completed service found with ID {completedServiceId}");
+            }
+
+            var review = new Review
+            {
+                UserId = userId,
+                CompletedServiceId = completedServiceId,
+                Rating = rating,
+                Comment = comment,
+                CreatedAt = DateTime.UtcNow,
+            };
+
+            _context.Reviews.Add(review);
+            await _context.SaveChangesAsync();
+
+            return review;
+        }
+
+        public async Task<Review?> GetReviewByIdAsync(int reviewId)
+        {
+            return await _context.Reviews
+                .Include(r => r.CompletedService)
+                .Include(r => r.User)
+                .FirstOrDefaultAsync(r => r.Id == reviewId);
+        }
+
+        public async Task<bool> UpdateReviewAsync(int reviewId, int? rating = null, string? comment = null)
+        {
+            var review = await _context.Reviews.FirstOrDefaultAsync(r => r.Id == reviewId);
+            if (review == null)
+            {
+                return false;
+            }
+
+            if (rating.HasValue)
+            {
+                review.Rating = rating.Value;
+            }
+
+            if (!string.IsNullOrWhiteSpace(comment))
+            {
+                review.Comment = comment;
+            }
+
+            _context.Reviews.Update(review);
+            await _context.SaveChangesAsync();
+
+            return true;
+        }
+
+        public async Task<bool> DeleteReviewAsync(int reviewId)
+        {
+            var review = await _context.Reviews.FirstOrDefaultAsync(r => r.Id == reviewId);
+            if (review == null)
+            {
+                return false;
+            }
+
+            _context.Reviews.Remove(review);
+            await _context.SaveChangesAsync();
+
+            return true;
+        }
+
     }
 }
