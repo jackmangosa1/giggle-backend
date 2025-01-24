@@ -488,5 +488,78 @@ namespace ServiceManagementAPI.Repositories.CustomerRepository
             return true;
         }
 
+        public async Task<MessageDto> SendMessageAsync(string senderId, string receiverId, string messageContent)
+        {
+            var message = new Message
+            {
+                SenderId = senderId,
+                ReceiverId = receiverId,
+                Content = messageContent,
+                SentAt = DateTime.UtcNow,
+                IsRead = false
+            };
+
+            _context.Messages.Add(message);
+            await _context.SaveChangesAsync();
+
+            var messageDto = new MessageDto
+            {
+                Id = message.Id,
+                SenderId = message.SenderId,
+                ReceiverId = message.ReceiverId,
+                Content = message.Content,
+                SentAt = message.SentAt,
+                IsRead = message.IsRead
+            };
+
+            await _hubContext.Clients.User(receiverId).SendAsync("ReceiveMessage", messageDto);
+
+            return messageDto;
+        }
+
+        public async Task<List<MessageDto>> GetChatHistoryAsync(string userId1, string userId2)
+        {
+            var messages = await _context.Messages
+                .Where(m =>
+                    (m.SenderId == userId1 && m.ReceiverId == userId2) ||
+                    (m.SenderId == userId2 && m.ReceiverId == userId1))
+                .OrderBy(m => m.SentAt)
+                .ToListAsync();
+
+            return messages.Select(m => new MessageDto
+            {
+                Id = m.Id,
+                SenderId = m.SenderId,
+                ReceiverId = m.ReceiverId,
+                Content = m.Content,
+                SentAt = m.SentAt,
+                IsRead = m.IsRead
+            }).ToList();
+        }
+
+        public async Task MarkMessagesAsReadAsync(string senderId, string receiverId)
+        {
+            var messages = await _context.Messages
+                .Where(m => m.SenderId == senderId && m.ReceiverId == receiverId && !m.IsRead)
+                .ToListAsync();
+
+            foreach (var message in messages)
+            {
+                message.IsRead = true;
+            }
+
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task<int> GetUnreadMessageCountAsync(string userId)
+        {
+            var count = await _context.Messages
+                .Where(m => m.ReceiverId == userId && !m.IsRead)
+                .CountAsync();
+
+            return count;
+        }
+
+
     }
 }

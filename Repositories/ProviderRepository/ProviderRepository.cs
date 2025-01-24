@@ -82,7 +82,7 @@ namespace ServiceManagementAPI.Repositories.ProviderRepository
 
             return new ProviderProfileDto
             {
-                Id = provider.Id,
+                Id = provider.User.Id,
                 DisplayName = provider.DisplayName,
                 Bio = provider.Bio,
                 Skills = skillNames,

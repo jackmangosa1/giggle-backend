@@ -65,5 +65,23 @@ namespace ServiceManagementAPI.Services.CustomerService
         {
             return await _customerRepository.DeleteReviewAsync(reviewId);
         }
+
+        public async Task<MessageDto> SendMessageAsync(string senderId, string receiverId, string messageContent)
+        {
+            return await SendMessageAsync(senderId, receiverId, messageContent);
+        }
+        public async Task<List<MessageDto>> GetChatHistoryAsync(string userId1, string userId2)
+        {
+            return await GetChatHistoryAsync(userId1, userId2);
+        }
+        public async Task MarkMessagesAsReadAsync(string senderId, string receiverId)
+        {
+            await MarkMessagesAsReadAsync(senderId, receiverId);
+        }
+
+        public async Task<int> GetUnreadMessageCountAsync(string userId)
+        {
+            return await GetUnreadMessageCountAsync(userId);
+        }
     }
 }

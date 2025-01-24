@@ -126,7 +126,7 @@ namespace ServiceManagementAPI
             app.MapControllers();
 
             app.MapHub<NotificationHub>("/notificationHub").RequireCors("AllowAllOrigins");
-            app.MapHub<ChatHub>("/chathub").RequireCors("AllowAllOrigins");
+            app.MapHub<ChatHub>("/chatHub").RequireCors("AllowAllOrigins");
 
             app.Run();
         }

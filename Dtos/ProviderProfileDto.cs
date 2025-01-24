@@ -2,7 +2,7 @@
 {
     public class ProviderProfileDto
     {
-        public int Id { get; set; }
+        public string Id { get; set; } = string.Empty;
         public string? DisplayName { get; set; }
         public string? Bio { get; set; }
         public List<string>? Skills { get; set; }
