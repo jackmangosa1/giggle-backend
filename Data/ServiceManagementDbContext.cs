@@ -49,7 +49,8 @@ public partial class ServiceManagementDbContext : DbContext
     public virtual DbSet<Skill> Skills { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        => optionsBuilder.UseSqlServer("Name=ConnectionStrings:DefaultConnectionString");
+#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
+        => optionsBuilder.UseSqlServer("Data Source=CRKNO003\\SQLEXPRESS;Initial Catalog=ServiceManagementDB;Integrated Security=True;Trust Server Certificate=True");
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -97,6 +98,8 @@ public partial class ServiceManagementDbContext : DbContext
                         j.ToTable("AspNetUserRoles");
                     });
         });
+
+
 
         modelBuilder.Entity<AspNetUserClaim>(entity =>
         {
@@ -195,6 +198,8 @@ public partial class ServiceManagementDbContext : DbContext
         {
             entity.HasKey(e => e.Id).HasName("PK__Customer__3213E83F5B340003");
 
+            entity.HasIndex(e => e.UserId, "UQ_Customers_UserId").IsUnique();
+
             entity.Property(e => e.Id).HasColumnName("id");
             entity.Property(e => e.Address)
                 .HasMaxLength(255)
@@ -205,53 +210,61 @@ public partial class ServiceManagementDbContext : DbContext
                 .HasColumnName("phoneNumber");
             entity.Property(e => e.PreferredPaymentMethod).HasColumnName("preferredPaymentMethod");
             entity.Property(e => e.ProfilePictureUrl).HasMaxLength(255);
-            entity.Property(e => e.UserId)
-                .HasMaxLength(450)
-                .HasColumnName("userId");
+            entity.Property(e => e.UserId).HasColumnName("userId");
 
+            entity.HasOne(d => d.User).WithOne(p => p.Customer)
+                .HasForeignKey<Customer>(d => d.UserId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK__Customers__userI__4AB81AF0");
         });
 
         modelBuilder.Entity<Message>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__Messages__3213E83F0798A180");
+            entity.HasKey(e => e.Id).HasName("PK__Messages__3214EC073B8B129D");
 
-            entity.Property(e => e.Id).HasColumnName("id");
-            entity.Property(e => e.Content).HasColumnName("content");
-            entity.Property(e => e.ReceiverId)
-                .HasMaxLength(450)
-                .HasColumnName("receiverId");
-            entity.Property(e => e.SenderId)
-                .HasMaxLength(450)
-                .HasColumnName("senderId");
-            entity.Property(e => e.SentAt)
-                .HasDefaultValueSql("(getdate())")
-                .HasColumnName("sentAt");
+            entity.Property(e => e.ReceiverId).HasMaxLength(450);
+            entity.Property(e => e.SenderId).HasMaxLength(450);
+            entity.Property(e => e.SentAt).HasDefaultValueSql("(getdate())");
 
             entity.HasOne(d => d.Receiver).WithMany(p => p.MessageReceivers)
                 .HasForeignKey(d => d.ReceiverId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__Messages__receiv__6FE99F9F");
+                .OnDelete(DeleteBehavior.ClientSetNull);
 
             entity.HasOne(d => d.Sender).WithMany(p => p.MessageSenders)
                 .HasForeignKey(d => d.SenderId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__Messages__sender__6EF57B66");
+                .OnDelete(DeleteBehavior.ClientSetNull);
         });
+
+
 
         modelBuilder.Entity<Notification>(entity =>
         {
             entity.HasKey(e => e.Id).HasName("PK__Notifica__3213E83F4EE90B95");
 
             entity.Property(e => e.Id).HasColumnName("id");
+            entity.Property(e => e.BookingId).HasColumnName("bookingId");
             entity.Property(e => e.BookingStatus).HasColumnName("bookingStatus");
             entity.Property(e => e.CreatedAt)
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnName("createdAt");
+            entity.Property(e => e.CustomerName)
+                .HasMaxLength(255)
+                .HasColumnName("customerName");
+            entity.Property(e => e.Email)
+                .HasMaxLength(255)
+                .HasColumnName("email");
             entity.Property(e => e.IsRead).HasColumnName("isRead");
+            entity.Property(e => e.PhoneNumber)
+                .HasMaxLength(50)
+                .HasColumnName("phoneNumber");
             entity.Property(e => e.Type).HasColumnName("type");
             entity.Property(e => e.UserId)
                 .HasMaxLength(450)
                 .HasColumnName("userId");
+
+            entity.HasOne(d => d.Booking).WithMany(p => p.Notifications)
+                .HasForeignKey(d => d.BookingId)
+                .HasConstraintName("FK_Notifications_Booking");
 
             entity.HasOne(d => d.User).WithMany(p => p.Notifications)
                 .HasForeignKey(d => d.UserId)
@@ -261,7 +274,7 @@ public partial class ServiceManagementDbContext : DbContext
 
         modelBuilder.Entity<Payment>(entity =>
         {
-            entity.HasKey(e => e.PaymentId).HasName("PK__Payments__A0D9EFC6D874735A");
+            entity.HasKey(e => e.PaymentId).HasName("PK__Payments__A0D9EFC6995CC416");
 
             entity.Property(e => e.PaymentId).HasColumnName("paymentId");
             entity.Property(e => e.BookingId).HasColumnName("bookingId");
@@ -276,10 +289,7 @@ public partial class ServiceManagementDbContext : DbContext
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnType("datetime")
                 .HasColumnName("paymentDate");
-            entity.Property(e => e.PaymentMethod)
-                .HasMaxLength(50)
-                .IsUnicode(false)
-                .HasColumnName("paymentMethod");
+            entity.Property(e => e.PaymentMethod).HasColumnName("paymentMethod");
             entity.Property(e => e.PaymentStatus).HasColumnName("paymentStatus");
             entity.Property(e => e.ReleasedAmount)
                 .HasColumnType("decimal(10, 2)")
@@ -289,6 +299,15 @@ public partial class ServiceManagementDbContext : DbContext
                 .IsUnicode(false)
                 .HasColumnName("transactionId");
 
+            entity.HasOne(d => d.Booking).WithMany(p => p.Payments)
+                .HasForeignKey(d => d.BookingId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK__Payments__bookin__40058253");
+
+            entity.HasOne(d => d.Customer).WithMany(p => p.Payments)
+                .HasForeignKey(d => d.CustomerId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK__Payments__custom__40F9A68C");
         });
 
         modelBuilder.Entity<Provider>(entity =>

@@ -67,6 +67,7 @@ namespace ServiceManagementAPI
             builder.Services.AddScoped<IProviderService, ProviderService>();
             builder.Services.AddScoped<IChatRepository, ChatRepository>();
             builder.Services.AddScoped<IChatService, ChatService>();
+            builder.Services.AddScoped<ChatService>();
 
             builder.Services.AddSingleton<BlobStorageUtil>();
 
@@ -127,6 +128,7 @@ namespace ServiceManagementAPI
 
             app.MapHub<NotificationHub>("/notificationHub").RequireCors("AllowAllOrigins");
             app.MapHub<ChatHub>("/chatHub").RequireCors("AllowAllOrigins");
+            app.MapHub<ProviderStatusHub>("/ProviderStatusHub").RequireCors("AllowAllOrigins");
 
             app.Run();
         }

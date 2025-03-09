@@ -272,6 +272,5 @@ namespace ServiceManagementAPI.Controllers
 
             return Ok(new { unreadCount });
         }
-
     }
 }

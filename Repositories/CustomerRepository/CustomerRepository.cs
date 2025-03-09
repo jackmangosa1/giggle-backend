@@ -169,11 +169,20 @@ namespace ServiceManagementAPI.Repositories.CustomerRepository
                     DisplayName = p.DisplayName!,
                     ProfilePictureUrl = p.ProfilePictureUrl,
                     Bio = p.Bio,
+                    AverageRating = p.Services
+                        .SelectMany(s => s.Bookings)
+                        .SelectMany(b => b.CompletedServices)
+                        .SelectMany(cs => cs.Reviews)
+                        .Average(r => (double?)r.Rating) ?? 0,
+                    AveragePrice = p.Services
+                        .Where(s => s.Price.HasValue)
+                        .Average(s => s.Price.Value)
                 })
                 .ToListAsync();
 
             return providers;
         }
+
 
         public async Task<List<NotificationDto>> GetNotificationsByUserIdAsync(string userId)
         {
@@ -559,7 +568,5 @@ namespace ServiceManagementAPI.Repositories.CustomerRepository
 
             return count;
         }
-
-
     }
 }

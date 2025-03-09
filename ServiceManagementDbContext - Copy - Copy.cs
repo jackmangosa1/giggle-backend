@@ -228,15 +228,15 @@ public partial class ServiceManagementDbContext : DbContext
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnName("sentAt");
 
-            entity.HasOne(d => d.Receiver).WithMany(p => p.MessageReceivers)
-                .HasForeignKey(d => d.ReceiverId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__Messages__receiv__6FE99F9F");
+            //entity.HasOne(d => d.Receiver).WithMany(p => p.MessageReceivers)
+            //    .HasForeignKey(d => d.ReceiverId)
+            //    .OnDelete(DeleteBehavior.ClientSetNull)
+            //    .HasConstraintName("FK__Messages__receiv__6FE99F9F");
 
-            entity.HasOne(d => d.Sender).WithMany(p => p.MessageSenders)
-                .HasForeignKey(d => d.SenderId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__Messages__sender__6EF57B66");
+            //entity.HasOne(d => d.Sender).WithMany(p => p.MessageSenders)
+            //    .HasForeignKey(d => d.SenderId)
+            //    .OnDelete(DeleteBehavior.ClientSetNull)
+            //    .HasConstraintName("FK__Messages__sender__6EF57B66");
         });
 
         modelBuilder.Entity<Notification>(entity =>

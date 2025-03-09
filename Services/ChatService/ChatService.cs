@@ -32,5 +32,25 @@ namespace ServiceManagementAPI.Services.ChatService
         {
             return await _chatRepository.GetUnreadMessageCountAsync(userId);
         }
+
+        public async Task<List<ChatDto>> GetUserChatsAsync(string userId)
+        {
+            return await _chatRepository.GetUserChatsAsync(userId);
+        }
+
+        public async Task<List<ChatDto>> GetProviderChatsAsync(string userId)
+        {
+            return await _chatRepository.GetProviderChatsAsync(userId);
+        }
+
+        public async Task<(string Name, string ProfilePictureUrl)> GetUserProfileInfoAsync(string userId)
+        {
+            return await _chatRepository.GetUserProfileInfoAsync(userId);
+        }
+
+        public async Task<ReceiverData> GetReceiverDataAsync(string receiverId)
+        {
+            return await _chatRepository.GetReceiverDataAsync(receiverId);
+        }
     }
 }

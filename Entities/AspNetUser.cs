@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.ComponentModel.DataAnnotations.Schema;
 
 namespace ServiceManagementAPI.Entities;
 
@@ -43,8 +42,10 @@ public partial class AspNetUser
 
     public virtual Customer? Customer { get; set; }
 
+    [NotMapped]
     public virtual ICollection<Message> MessageReceivers { get; set; } = new List<Message>();
 
+    [NotMapped]
     public virtual ICollection<Message> MessageSenders { get; set; } = new List<Message>();
 
     public virtual ICollection<Notification> Notifications { get; set; } = new List<Notification>();
