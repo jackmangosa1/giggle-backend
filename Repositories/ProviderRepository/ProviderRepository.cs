@@ -383,6 +383,7 @@ namespace ServiceManagementAPI.Repositories.ProviderRepository
                 {
                     BookingId = b.Id,
                     CustomerName = b.Customer.FullName ?? "Unknown",
+                    CustomerId = b.Customer.User.Id,
                     ServiceName = b.Service.Name,
                     Price = b.Service.Price ?? 0m,
                     Date = b.Date,

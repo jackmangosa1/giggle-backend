@@ -4,6 +4,7 @@
     {
         public int BookingId { get; set; }
         public string CustomerName { get; set; } = string.Empty;
+        public string CustomerId { get; set; } = string.Empty;
         public string ServiceName { get; set; } = string.Empty;
         public decimal Price { get; set; }
         public DateOnly Date { get; set; }
