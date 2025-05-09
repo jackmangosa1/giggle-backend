@@ -9,10 +9,12 @@ namespace ServiceManagementAPI.Controllers
     public class AuthController : ControllerBase
     {
         private readonly IAuthService _authService;
+        private readonly IConfiguration _configuration;
 
-        public AuthController(IAuthService authService)
+        public AuthController(IAuthService authService, IConfiguration configuration)
         {
             _authService = authService;
+            _configuration = configuration;
         }
 
         [HttpPost("RegisterCustomer")]
@@ -75,17 +77,22 @@ namespace ServiceManagementAPI.Controllers
         {
             if (string.IsNullOrWhiteSpace(userId) || string.IsNullOrWhiteSpace(token))
             {
-                return BadRequest("UserId and Token are required.");
+                var errorRedirectUrl = $"{_configuration["FrontendUrl"]}/email-confirmation?success=false&message=Missing%20UserId%20or%20Token";
+                return Redirect(errorRedirectUrl);
             }
 
             var result = await _authService.VerifyEmailAsync(userId, token);
             if (!result.Succeeded)
             {
-                return BadRequest(result.Errors);
+                var errorMessage = string.Join(", ", result.Errors);
+                var errorRedirectUrl = $"{_configuration["FrontendUrl"]}/email-confirmation?success=false&message={Uri.EscapeDataString(errorMessage)}";
+                return Redirect(errorRedirectUrl);
             }
 
-            return Ok(result);
+            var successRedirectUrl = $"{_configuration["FrontendUrl"]}/email-confirmation?success=true";
+            return Redirect(successRedirectUrl);
         }
+
 
         [HttpPost("ForgotPassword")]
         public async Task<IActionResult> ForgotPassword(ForgotPasswordDto forgotPasswordDto)
