@@ -109,6 +109,7 @@ namespace ServiceManagementAPI.Repositories.ProviderRepository
 
             provider.DisplayName = updateProviderProfileDto.DisplayName;
             provider.Bio = updateProviderProfileDto.Bio;
+            provider.PhoneNumber = updateProviderProfileDto.PhoneNumber;
 
             provider.Skills.Clear();
 
